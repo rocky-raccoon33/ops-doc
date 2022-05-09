@@ -161,16 +161,19 @@ PARTITION BY RANGE ( YEAR(separated) ) (
 
 `LIST`分区时建立离散的值列表告诉数据库特定的值属于哪个分区。
 
-与RANGE分区的区别：是LIST分区从属于一个**枚举列表**的值的集合，RANGE分区是从属于一个连续区间值的集合。
+`LIST分区`从属于一个**枚举列表**的值的集合，`RANGE分区`是从属于一个连续区间值的集合。
 
-与RANGE分区不同，没有类似于*MAXVALUE*的值来匹配所有的情况；**所有被期望的值**都应该被包含进`PARTITION ... VALUES IN (...)`子句。
+`LIST分区`没有类似于*MAXVALUE*的值来匹配所有的情况；**所有被期望的值**都应该被包含进`PARTITION ... VALUES IN (...)`子句。
 
 使用单个INSERT语句插入多行时，行为取决于表是否使用事务存储引擎：
 
 - 对于支持事务的存储引擎，整个插入语句会被当做一个单一的事务。
-- 对于不支持事务的存储引擎，在包含未匹配值的之前的记录会被插入，自己及其之后的不会。
+- 对于不支持事务的存储引擎，在包含未匹配值的之前的记录会被插入，自己及其之后的不会。 
 
 可以使用`IGNORE`关键字忽略此类错误，如此一来，包含未匹配的值的记录不会插入，其余的都会被插入到数据库并且不会发出错误。
+
+!!!note
+**ob 插入LIST无匹配的值 报错:Table has no partition for value**
 
 ```sql
 MariaDB [MYISAM_TEST]> CREATE TABLE IF NOT EXISTS list_test (ID INT) MAX_ROWS=8 
@@ -206,12 +209,12 @@ MariaDB [MYISAM_TEST]> SELECT * FROM list_test;
 
 这种分区类型可以使用整数类型以外的类型列来定义范围。
 
-RANGE COLUMNS 与 RANGE 分区的不同：
+相比于 RANGE 分区，`RANGE COLUMNS` 分区:
 
-- RANGE COLUMNS 不接受表达式，只接受字段名。
-- RANGE COLUMNS 接受一个或多个字段组合的列表。
-  - RANGE COLUMNS 划分基于元组之间的比较
-- RANGE COLUMNS 不受限于整数类型。其它类型也可以用作分区字段。
+- 不接受表达式，只接受字段名。
+- 接受一个或多个字段组合的列表。
+- 划分基于元组之间的比较
+- 不受限于整数类型。其它类型也可以用作分区字段。
 
 ```sql
 CREATE TABLE table_name
@@ -273,8 +276,6 @@ mysql> CREATE TABLE rcf (
     ->  );
 ERROR 1493 (HY000): VALUES LESS THAN value must be strictly increasing for each partition
 ```
-
-##### RANGE COLUMNS 划分基于元组之间的比较的解释
 
 举例说明：
 
@@ -478,7 +479,7 @@ CREATE TABLE ts (id INT, purchased DATE)
 - 不允许只对一部分分区定义子分区
 - 在整个表中每个子分区的名称必须是唯一的
 
-### MySQL分区如何处理NULL
+### MySQL分区如何处理NULL `OB同`
 
 !!! note
  `NULL`不是一个数字。
@@ -712,7 +713,6 @@ ALTER TABLE hash_par TRUNCATE PARTITION ALL;
 - 创建分区表之后不要改变模式`MySQL mode`
 
 - 性能方面
-
   - 文件系统操作。分区与重新分区的操作基于文件系统对它们的限制，所以速度的快慢与文件系统的类型、字符集、磁盘速度等都有关系。特别的，应该保证[`large_files_support`](https://dev.mysql.com/doc/refman/5.5/en/server-system-variables.html#sysvar_large_files_support)可用并且合适地设置 [`open_files_limit`](https://dev.mysql.com/doc/refman/5.5/en/server-system-variables.html#sysvar_open_files_limit)。
   - MyISAM和分区文件描述符的用法。MyISAM为每个分区使用两个文件描述符，**并且在操作数据的时候会使用所有的分区**。在你重新划分分区后，MyISAM不会删除原来的文件描述符，而是继续扩张新的分区大小的数量，这是MyISAM的设计决定的。比如原来有100个分区，那么就有200个文件去存储，现在重新划分，变成101个分区。此时有402个文件去存储。
   - 表锁。分区操作会在表上获取写锁。读取表的操作几乎不会受到影响；一旦分区操作完成，就执行挂起的INSERT和UPDATE操作。

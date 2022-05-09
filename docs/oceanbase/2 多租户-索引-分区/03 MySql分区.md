@@ -1,7 +1,7 @@
 
 ## 概念
 
-​  分区将一张表分为几个分区进行存储`[物理分区]`，本质上还是一张表。分区键用于根据某个区间值`[RANGE]`、特定值列表`[LIST]`或hash函数值`[HASH]`执行数据的聚集，让数据更具分布规则分布在不同的分区中，让一个大对象变成一些小对象。
+分区将一张表分为几个分区进行存储`[物理分区]`，本质上还是一张表。分区键用于根据某个区间值`[RANGE]`、特定值列表`[LIST]`或hash函数值`[HASH]`执行数据的聚集，让数据更具分布规则分布在不同的分区中，让一个大对象变成一些小对象。
 
 分区的优点：
 
@@ -9,7 +9,7 @@
 
 - 可以轻松的移除或添加分区达到删除数据或新增存储数据的空间。
 
-- 一些查询可以得到很好的优化 `指定分区查询...`
+- 一些查询可以得到很好的优化 `e.g: 指定分区查询`
 
 - 跨多个磁盘分散数据查询，获得更大的吞吐量
 
@@ -60,14 +60,15 @@ subpartition_definition:
         [TABLESPACE [=] tablespace_name]
         [NODEGROUP [=] node_group_id]
 ```
+
 !!!note
 - 分区选项一定要放在最后
 
-- 指定表的分区数`PARTITIONS num`时，必须将其表示为不带前导零的非零正整数，并且不是0.8E + 01或6-2等表达式，即使它的计算结果为整数值。不允许使用小数部分。
+- 指定表的分区数`PARTITIONS num`时，必须将其表示为不带前导零的非零正整数
 
-- 分区表上没有主键/唯一键 `或者` 使用主键/唯一键都必须包含分区键 `[ob无此限制]`
+- 分区表上没有主键/唯一键 `或者` 使用主键/唯一键都必须包含分区键 **ob无此限制**
 
-**分区的名字不区分大小写**
+- **分区的名字不区分大小写**
 
 ## 查看分区
 
@@ -79,28 +80,16 @@ subpartition_definition:
 
 ```sql
 SELECT * FROM INFORMATION_SCHEMA.PARTITIONS WHERE TABLE_NAME = 'table_name';
--- 简化版
-SELECT PARTITION_NAME,TABLE_ROWS FROM information_schema.PARTITIONS WHERE TABLE_NAME = 'hash_par';
 ```
 
-使用`EXPLAIN PARTITIONS select_statement`查看使用了哪些分区，和标准的[`EXPLAIN SELECT`](https://dev.mysql.com/doc/refman/5.5/en/explain.html)语句用法一样：
-
-```sql
-EXPLAIN PARTITIONS select_statement;
-```
+使用`EXPLAIN PARTITIONS select_statement`查看使用了哪些分区
 
 ## 删除分区
 
-和删除表一样，使用 `TRUNCATE` 清空分区（比`DELETE`要快），
+和删除表一样，使用 `TRUNCATE`/`DROP` 清空分区（比`DELETE`要快），
 
 ```sql
-ALTER TABLE table_name TRUNCATE PARTITION partition_name;
-```
-
-使用`DROP`删除分区：
-
-```sql
-ALTER TABLE table_name DROP PARTITION partition_name;
+ALTER TABLE table_name TRUNCATE/DROP PARTITION partition_name;
 ```
 
 ## 分区类型
@@ -172,7 +161,7 @@ PARTITION BY RANGE ( YEAR(separated) ) (
 
 `LIST`分区时建立离散的值列表告诉数据库特定的值属于哪个分区。
 
-与RANGE分区的区别：是LIST分区从属于一个枚举列表的值的集合，RANGE分区是从属于一个连续区间值的集合。
+与RANGE分区的区别：是LIST分区从属于一个**枚举列表**的值的集合，RANGE分区是从属于一个连续区间值的集合。
 
 与RANGE分区不同，没有类似于*MAXVALUE*的值来匹配所有的情况；**所有被期望的值**都应该被包含进`PARTITION ... VALUES IN (...)`子句。
 
@@ -373,7 +362,7 @@ PARTITIONS 4;
 
 常规HASH分区让每个分区管理的数据都减少了，提高了查询效率；但是在分区管理上的代价太大，故提供了线性分区*LINEAR HASH Partitioning*来解决这个问题。
 
-#### LINEAR HASH 分区
+#### LINEAR HASH 分区 [OB不支持]
 
 线性散列利用线性二次幂算法，而常规散列使用散列函数值的模数。
 
@@ -439,19 +428,18 @@ PARTITIONS num;
 
 注意：不能执行`ALTER TABLE DROP PRIMARY KEY`删除key类型的分区，但是NDB Cluster可以。
 
-#### LINEAR KEY 分区
+#### LINEAR KEY 分区[OB不支持]
 
 与线性HASH分区类似。
 
 ### 子分区
 
-子分区（`Subpartitioning`）也称为复合分区，是对分区表中分区的进一步划分。
+子分区（`Subpartitioning`）也称为复合分区 `二级分区[ob]`，是对分区表中分区的进一步划分。
 
 创建语法见上文。
 
-支持对RANGE分区和LIST分区划分的表再划分，子分区又支持HASH 分区类型和KEY 分区类型。
-
-例：
+mysql 支持对RANGE分区和LIST分区划分的表再划分，子分区又支持HASH 分区类型和KEY 分区类型。
+OceanBase MySQL 模式支持 HASH、RANGE、 LIST、KEY、RANGE COLUMNS 和 LIST COLUMNS 任意两种分区方式的组合
 
 ```sql
 -- 第一种写法
@@ -489,31 +477,6 @@ CREATE TABLE ts (id INT, purchased DATE)
 - 每个分区必须有相同数量的子分区
 - 不允许只对一部分分区定义子分区
 - 在整个表中每个子分区的名称必须是唯一的
-- 当NO_DIR_IN_CREATE服务器SQL模式生效时（不指定该模式也不可用），分区定义中不允许使用DATA DIRECTORY和INDEX DIRECTORY选项。从MySQL 5.5.5开始，在定义子分区时也不允许使用这些选项。实际操作可知：即使你添加了这两个选项，再创建表的时候也会忽略它们。
-
-```sql
--- 选项无效！
-MariaDB [MYISAM_TEST]> CREATE TABLE sub_par_test (id INT) ENGINE=MYISAM PARTITION BY RANGE (id) SUBPARTITION BY HASH (id)
-    -> (
-    -> PARTITION P0 VALUES LESS THAN (10) (
-    -> SUBPARTITION S01 DATA DIRECTORY = '/tmp/sub/data/s01' INDEX DIRECTORY = '/tmp/sub/index/s01',
-    -> SUBPARTITION S02 DATA DIRECTORY = '/tmp/sub/data/s02' INDEX DIRECTORY = '/tmp/sub/index/s02'
-    -> ),
-    -> PARTITION P1 VALUES LESS THAN (MAXVALUE) (
-    -> SUBPARTITION S03 DATA DIRECTORY = '/tmp/sub/data/s03' INDEX DIRECTORY = '/tmp/sub/index/s03',
-    -> SUBPARTITION S04 DATA DIRECTORY = '/tmp/sub/data/s04' INDEX DIRECTORY = '/tmp/sub/index/s04'
-    -> )
-    -> );
-MariaDB [MYISAM_TEST]> SHOW WARNINGS;
-+---------+------+----------------------------------+
-| Level   | Code | Message                          |
-+---------+------+----------------------------------+
-| Warning | 1618 | <DATA DIRECTORY> option ignored  |
-| Warning | 1618 | <INDEX DIRECTORY> option ignored |
-| Warning | 1618 | <DATA DIRECTORY> option ignored  |
-| Warning | 1618 | <INDEX DIRECTORY> option ignored |
-+---------+------+----------------------------------+
-```
 
 ### MySQL分区如何处理NULL
 

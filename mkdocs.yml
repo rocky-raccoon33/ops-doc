@@ -11,16 +11,3 @@ markdown_extensions:
   - footnotes
   - toc:
       permalink: true
-
-plugins:
-  - search
-  - mkdocs-add-number-plugin:
-      strict_mode: False # 模式选项
-      increment_pages: false
-      increment_topnav: false
-      # excludes:
-      #     - '*'
-      # includes:
-      #     - sql/
-      #     - mybatis\
-      # order: 1

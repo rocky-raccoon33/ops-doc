@@ -1,0 +1,3 @@
+site_name: ops docs
+theme:
+  name: material

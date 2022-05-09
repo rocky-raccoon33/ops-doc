@@ -1,7 +1,7 @@
 
 ## 概念
 
-​  分区将一张表分为几个分区进行存储，本质上还是一张表。分区键用于根据某个区间值、特定值列表或hash函数值执行数据的聚集，让数据更具分布规则分布在不同的分区中，让一个大对象变成一些小对象。
+​  分区将一张表分为几个分区进行存储`[物理分区]`，本质上还是一张表。分区键用于根据某个区间值`[RANGE]`、特定值列表`[LIST]`或hash函数值`[HASH]`执行数据的聚集，让数据更具分布规则分布在不同的分区中，让一个大对象变成一些小对象。
 
 分区的优点：
 
@@ -9,7 +9,7 @@
 
 - 可以轻松的移除或添加分区达到删除数据或新增存储数据的空间。
 
-- 一些查询可以得到很好的优化。
+- 一些查询可以得到很好的优化 `指定分区查询...`
 
 - 跨多个磁盘分散数据查询，获得更大的吞吐量
 
@@ -60,16 +60,15 @@ subpartition_definition:
         [TABLESPACE [=] tablespace_name]
         [NODEGROUP [=] node_group_id]
 ```
+!!!note
 
-分区选项一定要放在最后。
+- 分区选项一定要放在最后
 
-指定表的分区数`PARTITIONS num`时，必须将其表示为不带前导零的非零正整数，并且不是0.8E + 01或6-2等表达式，即使它的计算结果为整数值。不允许使用小数部分。
+- 指定表的分区数`PARTITIONS num`时，必须将其表示为不带前导零的非零正整数，并且不是0.8E + 01或6-2等表达式，即使它的计算结果为整数值。不允许使用小数部分。
 
-要么分区表上没有主键/唯一键，要么使用主键/唯一键都必须包含分区键。
+- 要么分区表上没有主键/唯一键，要么使用主键/唯一键都必须包含分区键 `[ob无此限制]`
 
-**分区的名字不区分大小写。**
-
-当NO_DIR_IN_CREATE服务器SQL模式生效时（没有指定该模式也不可以），分区定义中不允许使用DATA DIRECTORY和INDEX DIRECTORY选项。从MySQL 5.5.5开始，在定义子分区时也不允许使用这些选项。实际操作可知：即使你添加了这两个选项，再创建表的时候也会忽略它们。
+**分区的名字不区分大小写**
 
 ## 查看分区
 
@@ -91,23 +90,23 @@ SELECT PARTITION_NAME,TABLE_ROWS FROM information_schema.PARTITIONS WHERE TABLE_
 EXPLAIN PARTITIONS select_statement;
 ```
 
-EXPLAIN PARTITIONS 存在一些限制：
-
-- 不能同时使用PARTITIONS和EXTENDED关键字。
-- 如果用于解释非分区表，`partitions` 总是为`NULL`。
-
 ## 删除分区
 
-和删除表一样，使用 `TRUNCATE` 清空分区（比`DELETE`要快），使用`DROP`删除分区：
+和删除表一样，使用 `TRUNCATE` 清空分区（比`DELETE`要快），
 
 ```sql
 ALTER TABLE table_name TRUNCATE PARTITION partition_name;
+```
+
+使用`DROP`删除分区：
+
+```sql
 ALTER TABLE table_name DROP PARTITION partition_name;
 ```
 
 ## 分区类型
 
-通过`KYE`或`LINEAR KEY`分区时，可以使用`DATE,TIME,DATETIME`类型的字段作为分区字段。
+通过`KEY`或`LINEAR KEY`分区时，可以使用`DATE,TIME,DATETIME`类型的字段作为分区字段。
 
 通过`RANGE COLUMNS`和`LIST COLUMNS`分区时，可以使用`DATE,DATETIME`类型的字段作为分区字段。
 
@@ -166,9 +165,9 @@ PARTITION BY RANGE ( YEAR(separated) ) (
 
 `RANGE`分区类型特别适合以下几种情况：
 
-- 需要删除旧数据时。可以很轻松地通过删除分区来删除旧数据。`ALTER TABLE employees DROP PARTITION p0;`
-- 使用包含日期或时间值的列，或包含来自其他一些系列的值。
-- 经常运行包含分区键的查询。
+- 需要删除旧数据时。可以很轻松地通过删除分区来删除旧数据 `ALTER TABLE employees DROP PARTITION p0;`
+- 使用包含日期或时间值的列，或包含来自其他一些系列的值
+- 经常运行包含分区键的查询
 
 ### LIST 分区
 
@@ -207,13 +206,13 @@ MariaDB [MYISAM_TEST]> SELECT * FROM list_test;
 
 ### COLUMNS 分区
 
-列分区是`RANGE`和`LIST`分区的变种。COLUMNS分区允许在分区键中使用多个列。
+列分区是`RANGE`和`LIST`分区的变种。COLUMNS分区允许在分区键中`使用多个列`。
 
 `RANGE COLUMNS` 分区和`LIST COLUMNS` 分区都支持非整型（non-integer）字段作为值的范围或列的成员，以下是运行的数据类型：
 
-- 所有的整数类型：TINYINT, SMALLINT, MEDIUMINT, INT (INTEGER), BIGINT
-- 部分时间类型：DATE 和 DATETIME
-- 部分字符串类型：CHAR, VARCHAR, BINARY,  VARBINARY
+- 所有的整数类型：`TINYINT, SMALLINT, MEDIUMINT, INT (INTEGER), BIGINT`
+- 部分时间类型：`DATE 和 DATETIME`
+- 部分字符串类型：`CHAR, VARCHAR, BINARY,  VARBINARY`
 
 #### RANGE COLUMNS 分区
 
@@ -371,7 +370,7 @@ PARTITION BY HASH( YEAR(hired) )
 PARTITIONS 4;
 ```
 
-*expr* 必须返回非常量非随机数的整型值。非常复杂的表达式可能会导致性能问题。也就是说，表达式越接近它所基于的列的值，MySQL就越有效地使用表达式进行散列分区。通过**取模运算**计算存储的分区号：*N* = MOD(*expr*, *num*)。
+*expr* 必须返回非常量非随机数的`整型值`。非常复杂的表达式可能会导致性能问题。也就是说，表达式越接近它所基于的列的值，MySQL就越有效地使用表达式进行散列分区。通过**取模运算**计算存储的分区号：*N* = MOD(*expr*, *num*)。
 
 常规HASH分区让每个分区管理的数据都减少了，提高了查询效率；但是在分区管理上的代价太大，故提供了线性分区*LINEAR HASH Partitioning*来解决这个问题。
 

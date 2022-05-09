@@ -66,7 +66,7 @@ subpartition_definition:
 
 - 指定表的分区数`PARTITIONS num`时，必须将其表示为不带前导零的非零正整数
 
-- 分区表上没有主键/唯一键 `或者` 使用主键/唯一键都必须包含分区键 **ob无此限制**
+- 分区表上没有主键/唯一键 `或者` 使用主键/唯一键都必须包含分区键 `ob无此限制`
 
 - **分区的名字不区分大小写**
 
@@ -362,7 +362,7 @@ PARTITIONS 4;
 
 常规HASH分区让每个分区管理的数据都减少了，提高了查询效率；但是在分区管理上的代价太大，故提供了线性分区*LINEAR HASH Partitioning*来解决这个问题。
 
-#### LINEAR HASH 分区 [OB不支持]
+#### LINEAR HASH 分区 `OB不支持`
 
 线性散列利用线性二次幂算法，而常规散列使用散列函数值的模数。
 
@@ -428,7 +428,7 @@ PARTITIONS num;
 
 注意：不能执行`ALTER TABLE DROP PRIMARY KEY`删除key类型的分区，但是NDB Cluster可以。
 
-#### LINEAR KEY 分区[OB不支持]
+#### LINEAR KEY 分区`OB不支持`
 
 与线性HASH分区类似。
 
@@ -752,7 +752,7 @@ ALTER TABLE hash_par TRUNCATE PARTITION ALL;
 
   - [**mysqlcheck**](https://dev.mysql.com/doc/refman/5.5/en/mysqlcheck.html), [**myisamchk**](https://dev.mysql.com/doc/refman/5.5/en/myisamchk.html), and [**myisampack**](https://dev.mysql.com/doc/refman/5.5/en/myisampack.html)不支持分区表。
 
-### 分区键，主键，唯一键
+### 分区键，主键，唯一键 `ob一级分区无限制 二级分区报错`
 
 三者的关系：分区表的分区表达式中使用的所有列必须是表可能具有的每个唯一键的一部分（主键被定义为唯一键）。换句话说：**表上的每个唯一键必须使用表的分区表达式中的每一列。**如果表中没有唯一键则不受此约束。
 

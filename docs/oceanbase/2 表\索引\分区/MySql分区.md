@@ -15,7 +15,7 @@
 
 ## 分区表的创建
 
-```mysql
+```sql
 CREATE [TEMPORARY] TABLE [IF NOT EXISTS] tbl_name
     (create_definition,...)
     [table_options]
@@ -79,7 +79,7 @@ subpartition_definition:
 
 查询`INFORMATION_SCHEMA.PARTITIONS`表：
 
-```mysql
+```sql
 SELECT * FROM INFORMATION_SCHEMA.PARTITIONS WHERE TABLE_NAME = 'table_name';
 -- 简化版
 SELECT PARTITION_NAME,TABLE_ROWS FROM information_schema.PARTITIONS WHERE TABLE_NAME = 'hash_par';
@@ -87,7 +87,7 @@ SELECT PARTITION_NAME,TABLE_ROWS FROM information_schema.PARTITIONS WHERE TABLE_
 
 使用`EXPLAIN PARTITIONS select_statement`查看使用了哪些分区，和标准的[`EXPLAIN SELECT`](https://dev.mysql.com/doc/refman/5.5/en/explain.html)语句用法一样：
 
-```mysql
+```sql
 EXPLAIN PARTITIONS select_statement;
 ```
 
@@ -100,7 +100,7 @@ EXPLAIN PARTITIONS 存在一些限制：
 
 和删除表一样，使用 `TRUNCATE` 清空分区（比`DELETE`要快），使用`DROP`删除分区：
 
-```mysql
+```sql
 ALTER TABLE table_name TRUNCATE PARTITION partition_name;
 ALTER TABLE table_name DROP PARTITION partition_name;
 ```
@@ -123,7 +123,7 @@ ALTER TABLE table_name DROP PARTITION partition_name;
 - 支持使用`DATE,DATETIME`类型的字段作为分区键
 - 支持使用`UNIX_TIMESTAMP,YEAR`等函数进行分区
 
-```mysql
+```sql
 CREATE TABLE `range_test` (
   `ID` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8
@@ -185,7 +185,7 @@ PARTITION BY RANGE ( YEAR(separated) ) (
 
 可以使用`IGNORE`关键字忽略此类错误，如此一来，包含未匹配的值的记录不会插入，其余的都会被插入到数据库并且不会发出错误。
 
-```mysql
+```sql
 MariaDB [MYISAM_TEST]> CREATE TABLE IF NOT EXISTS list_test (ID INT) MAX_ROWS=8 
 PARTITION BY LIST (ID) (
     PARTITION P0 VALUES IN (1,2,3,4,5),
@@ -226,7 +226,7 @@ RANGE COLUMNS 与 RANGE 分区的不同：
   - RANGE COLUMNS 划分基于元组之间的比较
 - RANGE COLUMNS 不受限于整数类型。其它类型也可以用作分区字段。
 
-```mysql
+```sql
 CREATE TABLE table_name
 PARTITIONED BY RANGE COLUMNS(column_list) (
     PARTITION partition_name VALUES LESS THAN (value_list)[,
@@ -241,7 +241,7 @@ value_list:
 
 创建举例：
 
-```mysql
+```sql
 mysql> CREATE TABLE rcx (
     ->     a INT,
     ->     b INT,
@@ -259,7 +259,7 @@ Query OK, 0 rows affected (0.15 sec)
 
 分区的定义必须遵从递增的顺序，否则会报错：
 
-```mysql
+```sql
 -- 正确
 CREATE TABLE rc4 (
     a INT,
@@ -291,7 +291,7 @@ ERROR 1493 (HY000): VALUES LESS THAN value must be strictly increasing for each 
 
 举例说明：
 
-```mysql
+```sql
 -- 创建分区表
 MariaDB [MYISAM_TEST]> CREATE TABLE rc1 (
     ->     a INT,
@@ -316,7 +316,7 @@ MariaDB [MYISAM_TEST]> SELECT PARTITION_NAME,TABLE_ROWS FROM INFORMATION_SCHEMA.
 
 多行分区对于分区键的比较是对元组进行比较，类似于这样：
 
-```mysql
+```sql
 mysql> SELECT (5,10) < (5,12), (5,11) < (5,12), (5,12) < (5,12);
 +-----------------+-----------------+-----------------+
 | (5,10) < (5,12) | (5,11) < (5,12) | (5,12) < (5,12) |
@@ -334,7 +334,7 @@ mysql> SELECT (5,10) < (5,12), (5,11) < (5,12), (5,12) < (5,12);
 
 多个字段作为分区键的写法：
 
-```mysql
+```sql
 CREATE TABLE lc (
     a INT NULL,
     b INT NULL
@@ -351,7 +351,7 @@ PARTITION BY LIST COLUMNS(a,b) (
 
 通过`HASH`进行分区主要用于确保在预定分区数量之间均匀地分布数据。
 
-```mysql
+```sql
 CREATE TABLE employees (
     ...
 )
@@ -361,7 +361,7 @@ PARTITIONS num;
 
 分区键*expr*是整型的字段或者是返回整型的表达式，同时需要指定分区数量*num*。
 
-```mysql
+```sql
 CREATE TABLE employees (
     id INT NOT NULL,
     hired DATE NOT NULL DEFAULT '1970-01-01',
@@ -379,7 +379,7 @@ PARTITIONS 4;
 
 线性散列利用线性二次幂算法，而常规散列使用散列函数值的模数。
 
-```mysql
+```sql
 CREATE TABLE employees (
     ...
 )
@@ -391,7 +391,7 @@ PARTITIONS num;
 
 1. 找到下一个大于等于*num*的2的幂*V*
 
-```mysql
+```sql
 V = POWER(2, CEILING(LOG(2, num)))
 ```
 
@@ -402,7 +402,7 @@ V = POWER(2, CEILING(LOG(2, num)))
 
 举例：
 
-```mysql
+```sql
 CREATE TABLE t1 (col1 INT, col2 CHAR(5), col3 DATE)
     PARTITION BY LINEAR HASH( YEAR(col3) )
     PARTITIONS 6;
@@ -429,7 +429,7 @@ N = 6 & ((8 / 2) - 1)
 
 类似于HASH分区，但是使用MySQL服务器提供的哈希函数。NDB Cluster 使用MD5()；其它的使用基于密码加密算法的哈希函数。
 
-```mysql
+```sql
 CREATE TABLE employees (
     ...
 )
@@ -455,7 +455,7 @@ PARTITIONS num;
 
 例：
 
-```mysql
+```sql
 -- 第一种写法
 CREATE TABLE ts (id INT, purchased DATE)
     PARTITION BY RANGE( YEAR(purchased) )
@@ -493,7 +493,7 @@ CREATE TABLE ts (id INT, purchased DATE)
 - 在整个表中每个子分区的名称必须是唯一的
 - 当NO_DIR_IN_CREATE服务器SQL模式生效时（不指定该模式也不可用），分区定义中不允许使用DATA DIRECTORY和INDEX DIRECTORY选项。从MySQL 5.5.5开始，在定义子分区时也不允许使用这些选项。实际操作可知：即使你添加了这两个选项，再创建表的时候也会忽略它们。
 
-```mysql
+```sql
 -- 选项无效！
 MariaDB [MYISAM_TEST]> CREATE TABLE sub_par_test (id INT) ENGINE=MYISAM PARTITION BY RANGE (id) SUBPARTITION BY HASH (id)
     -> (
@@ -546,11 +546,11 @@ NULL值被视为**零**。
 
 #### 删除
 
-```mysql
+```sql
 ALTER TABLE ... DROP PARTITION ...
 ```
 
-```mysql
+```sql
 mysql> ALTER TABLE tr DROP PARTITION p2;
 Query OK, 0 rows affected (0.03 sec)
 ```
@@ -559,13 +559,13 @@ Query OK, 0 rows affected (0.03 sec)
 
 #### 添加
 
-```mysql
+```sql
 ALTER TABLE ... ADD PARTITION partition_definitions
 ```
 
 RANGE只能在分区尾部添加新的分区，并且其范围比存在的分区都大。
 
-```mysql
+```sql
 ALTER TABLE members ADD PARTITION (PARTITION p3 VALUES LESS THAN (2010));
 ALTER TABLE tt ADD PARTITION (PARTITION p2 VALUES IN (7, 14, 21), PARTITION p3 VALUES IN (1));
 ```
@@ -574,7 +574,7 @@ LIST分区不能包含**重复的值**。
 
 #### 重组
 
-```mysql
+```sql
 ALTER TABLE table_name REORGANIZE PARTITION partition_names INTO (partition_definitions)
 ```
 
@@ -582,7 +582,7 @@ ALTER TABLE table_name REORGANIZE PARTITION partition_names INTO (partition_defi
 
 分离分区：
 
-```MySQL
+```sql
 ALTER TABLE members
     REORGANIZE PARTITION p0 INTO (
         PARTITION n0 VALUES LESS THAN (1970),
@@ -592,7 +592,7 @@ ALTER TABLE members
 
 合并分区：
 
-```MySQL
+```sql
 ALTER TABLE members REORGANIZE PARTITION s0,s1 INTO (
  PARTITION p0 VALUES LESS THAN (1970)
 );
@@ -600,7 +600,7 @@ ALTER TABLE members REORGANIZE PARTITION s0,s1 INTO (
 
 分离与合并的关系不必是一对多或多对一，可以是**多对多**：
 
-```MySQL
+```sql
 ALTER TABLE members REORGANIZE PARTITION p0,p1,p2,p3 INTO (
     PARTITION m0 VALUES LESS THAN (1980),
     PARTITION m1 VALUES LESS THAN (2000)
@@ -619,13 +619,13 @@ ALTER TABLE members REORGANIZE PARTITION p0,p1,p2,p3 INTO (
 
 不可删除指定分区，使用如下语句合并分区：
 
-```MySQL
+```sql
 ALTER TABLE table_name COALESCE PARTITION number
 ```
 
 *number*是要合并到其余分区的分区数，即删除的分区数。
 
-```MySQL
+```sql
 MariaDB [MYISAM_TEST]> ALTER TABLE hash_par COALESCE PARTITION 2;
 Query OK, 4 rows affected (0.11 sec)
 Records: 4  Duplicates: 0  Warnings: 0
@@ -633,7 +633,7 @@ Records: 4  Duplicates: 0  Warnings: 0
 
 #### 添加
 
-```MySQL
+```sql
 ALTER TABLE table_name ADD PARTITION PARTITIONS number 
 ```
 
@@ -645,7 +645,7 @@ ALTER TABLE table_name ADD PARTITION PARTITIONS number
 
 子分区会自动的进行相应的操作：
 
-```MySQL
+```sql
 MariaDB [MYISAM_TEST]> SHOW CREATE TABLE sub_par_test \G;
 CREATE TABLE `sub_par_test` (
   `id` int(11) DEFAULT NULL
@@ -684,19 +684,19 @@ SUBPARTITION BY HASH (id)
 
 语法：
 
-```MySQL
+```sql
 ALTER TABLE table_name action PARTITION {partition_names | ALL}
 ```
 
 - **重构分区**：丢弃（drop）分区所有的记录，然后重新插入数据。对于碎片整理很有用处。
 
-```MySQL
+```sql
 ALTER TABLE t1 REBUILD PARTITION p0, p1;
 ```
 
 - **优化分区**：若删除了一个分区的大量数据，或者在可变类型的字段做出了很多改变，可使用此语句来回收未使用的空间和优化分区数据文件。
 
-```MySQL
+```sql
 ALTER TABLE t1 OPTIMIZE PARTITION p0, p1;
 ```
 
@@ -706,19 +706,19 @@ ALTER TABLE t1 OPTIMIZE PARTITION p0, p1;
 
 - **分析分区**：读取并存储分区的key分布。
 
-```MySQL
+```sql
 ALTER TABLE t1 ANALYZE PARTITION p3;
 ```
 
 - **修复分区**：修复损坏的分区。
 
-```MySQL
+```sql
 ALTER TABLE t1 REPAIR PARTITION p0,p1;
 ```
 
 - **检查分区**：检查分区是否存在错误。其使用方式与在非分区表使用CHECK TABLE的方式非常相似。
 
-```MySQL
+```sql
 ALTER TABLE trb3 CHECK PARTITION p1;
 ```
 
@@ -797,7 +797,7 @@ ALTER TABLE hash_par TRUNCATE PARTITION ALL;
 
 例如下面这些是合法的：
 
-```mysql
+```sql
 CREATE TABLE t1 (
     col1 INT NOT NULL,
     col2 DATE NOT NULL,

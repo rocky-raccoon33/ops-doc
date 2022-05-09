@@ -171,7 +171,7 @@ PARTITION BY RANGE ( YEAR(separated) ) (
 可以使用`IGNORE`关键字忽略此类错误，如此一来，包含未匹配的值的记录不会插入，其余的都会被插入到数据库并且不会发出错误。
 
 !!!note
-**ob 插入LIST无匹配的值 报错:Table has no partition for value**
+`ob 插入LIST无匹配的值 报错:Table has no partition for value`
 
 ```sql
 MariaDB [MYISAM_TEST]> CREATE TABLE IF NOT EXISTS list_test (ID INT) MAX_ROWS=8 

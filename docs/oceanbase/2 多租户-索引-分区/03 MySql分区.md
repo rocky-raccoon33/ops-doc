@@ -5,9 +5,9 @@
 
 分区的优点：
 
-- 可以在一个表中存储比在单个磁盘或文件系统分区上能保存的更多的数据。
+- 可以在一个表中存储比在单个磁盘或文件系统分区上能保存的更多的数据
 
-- 可以轻松的移除或添加分区达到删除数据或新增存储数据的空间。
+- 可以轻松的移除或添加分区达到删除数据或新增存储数据的空间
 
 - 一些查询可以得到很好的优化 `e.g: 指定分区查询`
 
@@ -66,7 +66,7 @@ subpartition_definition:
 
 - 指定表的分区数`PARTITIONS num`时，必须将其表示为不带前导零的非零正整数
 
-- 分区表上没有主键/唯一键 `或者` 使用主键/唯一键都必须包含分区键 `ob无此限制`
+- 分区表上没有主键/唯一键 `或者` 使用主键/唯一键都必须包含分区键 `ob无唯一键限制`
 
 - **分区的名字不区分大小写**
 
@@ -94,11 +94,9 @@ ALTER TABLE table_name TRUNCATE/DROP PARTITION partition_name;
 
 ## 分区类型
 
-通过`KEY`或`LINEAR KEY`分区时，可以使用`DATE,TIME,DATETIME`类型的字段作为分区字段。
+通过`KEY` `RANGE COLUMNS` `LIST COLUMNS`分区时，可以使用`DATE` `TIME` `DATETIME`类型的字段作为分区字段。
 
-通过`RANGE COLUMNS`和`LIST COLUMNS`分区时，可以使用`DATE,DATETIME`类型的字段作为分区字段。
-
-其它的分区类型在要求一个返回整型数值或NULL的分区表达式。
+其它的分区类型在要求一个返回整型数值或NULL的分区表达式
 
 ### RANGE 分区
 
@@ -159,11 +157,11 @@ PARTITION BY RANGE ( YEAR(separated) ) (
 
 ### LIST 分区
 
-`LIST`分区时建立离散的值列表告诉数据库特定的值属于哪个分区。
+- 建立离散的值列表告诉数据库特定的值属于哪个分区。
 
-`LIST分区`从属于一个**枚举列表**的值的集合，`RANGE分区`是从属于一个连续区间值的集合。
+- 从属于一个**枚举列表**的值的集合，`RANGE分区`是从属于一个连续区间值的集合。
 
-`LIST分区`没有类似于*MAXVALUE*的值来匹配所有的情况；**所有被期望的值**都应该被包含进`PARTITION ... VALUES IN (...)`子句。
+- 没有类似于*MAXVALUE*的值来匹配所有的情况；**所有被期望的值**都应该被包含进`PARTITION ... VALUES IN (...)`子句。
 
 使用单个INSERT语句插入多行时，行为取决于表是否使用事务存储引擎：
 
@@ -229,7 +227,7 @@ value_list:
     value[, value][, ...]
 ```
 
-创建举例：
+`e.g`:
 
 ```sql
 mysql> CREATE TABLE rcx (
@@ -277,7 +275,7 @@ mysql> CREATE TABLE rcf (
 ERROR 1493 (HY000): VALUES LESS THAN value must be strictly increasing for each partition
 ```
 
-举例说明：
+`e.g`:
 
 ```sql
 -- 创建分区表
@@ -725,7 +723,21 @@ ALTER TABLE hash_par TRUNCATE PARTITION ALL;
 
 - 每个分区的**key caches**。在MySQL 5.5中，CACHE INDEX和LOAD INDEX INTO CACHE语句支持MyISAM分区表的key caches。
 
-- InnoDB分区表不支持外键。
+- InnoDB分区表不支持外键 
+
+```sql
+-- mysql: Foreign keys are not yet supported in conjunction with partitioning
+-- ob: 正常执行
+CREATE TABLE Persons(PersonID INT PRIMARY KEY)
+
+CREATE TABLE Orders (
+    OrderID int NOT NULL,
+    OrderNumber int NOT NULL,
+    PersonID int,
+    PRIMARY KEY (OrderID),
+    FOREIGN KEY (PersonID) REFERENCES Persons(PersonID)
+) PARTITION BY HASH(OrderID) PARTITIONS 4;
+```
 
 - ALTER TABLE ... ORDER BY。导致仅在每个分区内对记录排序。
 
@@ -739,7 +751,7 @@ ALTER TABLE hash_par TRUNCATE PARTITION ALL;
 
 - 分区键的类型。分区键必须是整数列或解析为整数的表达式。可以接受NULL值。不能是子查询。
 
-- 子分区。只有`RANGE`和`LIST`表支持子分区，并且子分区的类型必须是`HASH`或`KEY`分区。
+- 子分区。只有`RANGE`和`LIST`表支持子分区，并且子分区的类型必须是`HASH`或`KEY`分区 `mysql限制`
 
 - SUBPARTITION BY KEY 要求必须指明分区的字段或字段列表。
 

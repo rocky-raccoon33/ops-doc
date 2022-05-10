@@ -9,7 +9,7 @@
 
 - 可以轻松的移除或添加分区达到删除数据或新增存储数据的空间
 
-- 一些查询可以得到很好的优化 `e.g: 指定分区查询`
+- 一些查询可以得到很好的优化 `举例: 指定分区查询`
 
 - 跨多个磁盘分散数据查询，获得更大的吞吐量
 
@@ -166,7 +166,7 @@ PARTITION BY RANGE ( YEAR(separated) ) (
 使用单个INSERT语句插入多行时，行为取决于表是否使用事务存储引擎：
 
 - 对于支持事务的存储引擎，整个插入语句会被当做一个单一的事务。
-- 对于不支持事务的存储引擎，在包含未匹配值的之前的记录会被插入，自己及其之后的不会。 
+- 对于不支持事务的存储引擎，在包含未匹配值的之前的记录会被插入，自己及其之后的不会。
 
 可以使用`IGNORE`关键字忽略此类错误，如此一来，包含未匹配的值的记录不会插入，其余的都会被插入到数据库并且不会发出错误。
 
@@ -227,7 +227,7 @@ value_list:
     value[, value][, ...]
 ```
 
-`e.g`:
+**`举例`**:
 
 ```sql
 mysql> CREATE TABLE rcx (
@@ -275,7 +275,7 @@ mysql> CREATE TABLE rcf (
 ERROR 1493 (HY000): VALUES LESS THAN value must be strictly increasing for each partition
 ```
 
-**`e.g`**:
+**`举例`**:
 
 ```sql
 -- 创建分区表
@@ -386,7 +386,7 @@ V = POWER(2, CEILING(LOG(2, num)))
     - Set *V* = *V* / 2
     - Set *N* = *N* & (*V* - 1)
 
-举例：
+**`举例`**：
 
 ```sql
 CREATE TABLE t1 (col1 INT, col2 CHAR(5), col3 DATE)
@@ -716,7 +716,7 @@ ALTER TABLE hash_par TRUNCATE PARTITION ALL;
 
 - 每个分区的**key caches**。在MySQL 5.5中，CACHE INDEX和LOAD INDEX INTO CACHE语句支持MyISAM分区表的key caches。
 
-- InnoDB分区表不支持外键 
+- InnoDB分区表不支持外键
 
 ```sql
 -- mysql: Foreign keys are not yet supported in conjunction with partitioning
@@ -750,15 +750,11 @@ CREATE TABLE Orders (
 
 - 不支持**DELAYED**选项。不支持[`INSERT DELAYED`](https://dev.mysql.com/doc/refman/5.5/en/insert-delayed.html)。
 
-- 性能方面
-  - 文件系统操作
-  - 表锁。分区操作会在表上获取写锁。读取表的操作几乎不会受到影响；一旦分区操作完成，就执行挂起的INSERT和UPDATE操作。
-  - 存储引擎。对于MyISAM表而言，分区操作，查询和更新操作通常比使用InnoDB或NDB表更快。
-  - LOAD DATA
-
+- 性能方面 (1)`文件系统操作` (2)`表锁:分区操作会在表上获取写锁。读取表的操作几乎不会受到影响；一旦分区操作完成，就执行挂起的INSERT和UPDATE操作` (3)`LOAD DATA` (4)`存储引擎`
+  
 - blah blah
 
-### 分区键，主键，唯一键 
+### 分区键，主键，唯一键
 
 三者的关系：分区表的分区表达式中使用的所有列必须是表可能具有的每个唯一键的一部分（主键被定义为唯一键）。换句话说：**表上的每个唯一键`mysql`必须使用表的分区表达式中的每一列。**如果表中没有唯一键则不受此约束。
 

@@ -1,15 +1,15 @@
 
 ## 概念
 
-​  分区将一张表分为几个分区进行存储`[物理分区]`，本质上还是一张表。分区键用于根据某个区间值`[RANGE]`、特定值列表`[LIST]`或hash函数值`[HASH]`执行数据的聚集，让数据更具分布规则分布在不同的分区中，让一个大对象变成一些小对象。
+分区将一张表分为几个分区进行存储`[物理分区]`，本质上还是一张表。分区键用于根据某个区间值`[RANGE]`、特定值列表`[LIST]`或hash函数值`[HASH]`执行数据的聚集，让数据更具分布规则分布在不同的分区中，让一个大对象变成一些小对象。
 
 分区的优点：
 
-- 可以在一个表中存储比在单个磁盘或文件系统分区上能保存的更多的数据。
+- 可以在一个表中存储比在单个磁盘或文件系统分区上能保存的更多的数据
 
-- 可以轻松的移除或添加分区达到删除数据或新增存储数据的空间。
+- 可以轻松的移除或添加分区达到删除数据或新增存储数据的空间
 
-- 一些查询可以得到很好的优化 `指定分区查询...`
+- 一些查询可以得到很好的优化 `e.g: 指定分区查询`
 
 - 跨多个磁盘分散数据查询，获得更大的吞吐量
 
@@ -60,14 +60,15 @@ subpartition_definition:
         [TABLESPACE [=] tablespace_name]
         [NODEGROUP [=] node_group_id]
 ```
+
 !!!note
 - 分区选项一定要放在最后
 
-- 指定表的分区数`PARTITIONS num`时，必须将其表示为不带前导零的非零正整数，并且不是0.8E + 01或6-2等表达式，即使它的计算结果为整数值。不允许使用小数部分。
+- 指定表的分区数`PARTITIONS num`时，必须将其表示为不带前导零的非零正整数
 
-- 分区表上没有主键/唯一键 `或者` 使用主键/唯一键都必须包含分区键 `[ob无此限制]`
+- 分区表上没有主键/唯一键 `或者` 使用主键/唯一键都必须包含分区键 **`ob无唯一键限制`**
 
-**分区的名字不区分大小写**
+- **分区的名字不区分大小写**
 
 ## 查看分区
 
@@ -79,37 +80,23 @@ subpartition_definition:
 
 ```sql
 SELECT * FROM INFORMATION_SCHEMA.PARTITIONS WHERE TABLE_NAME = 'table_name';
--- 简化版
-SELECT PARTITION_NAME,TABLE_ROWS FROM information_schema.PARTITIONS WHERE TABLE_NAME = 'hash_par';
 ```
 
-使用`EXPLAIN PARTITIONS select_statement`查看使用了哪些分区，和标准的[`EXPLAIN SELECT`](https://dev.mysql.com/doc/refman/5.5/en/explain.html)语句用法一样：
-
-```sql
-EXPLAIN PARTITIONS select_statement;
-```
+使用`EXPLAIN PARTITIONS select_statement`查看使用了哪些分区
 
 ## 删除分区
 
-和删除表一样，使用 `TRUNCATE` 清空分区（比`DELETE`要快），
+和删除表一样，使用 `TRUNCATE`/`DROP` 清空分区（比`DELETE`要快），
 
 ```sql
-ALTER TABLE table_name TRUNCATE PARTITION partition_name;
-```
-
-使用`DROP`删除分区：
-
-```sql
-ALTER TABLE table_name DROP PARTITION partition_name;
+ALTER TABLE table_name TRUNCATE/DROP PARTITION partition_name;
 ```
 
 ## 分区类型
 
-通过`KEY`或`LINEAR KEY`分区时，可以使用`DATE,TIME,DATETIME`类型的字段作为分区字段。
+通过`KEY` `RANGE COLUMNS` `LIST COLUMNS`分区时，可以使用`DATE` `TIME` `DATETIME`类型的字段作为分区字段。
 
-通过`RANGE COLUMNS`和`LIST COLUMNS`分区时，可以使用`DATE,DATETIME`类型的字段作为分区字段。
-
-其它的分区类型在要求一个返回整型数值或NULL的分区表达式。
+其它的分区类型在要求一个返回整型数值或NULL的分区表达式
 
 ### RANGE 分区
 
@@ -170,18 +157,21 @@ PARTITION BY RANGE ( YEAR(separated) ) (
 
 ### LIST 分区
 
-`LIST`分区时建立离散的值列表告诉数据库特定的值属于哪个分区。
+- 建立离散的值列表告诉数据库特定的值属于哪个分区。
 
-与RANGE分区的区别：是LIST分区从属于一个枚举列表的值的集合，RANGE分区是从属于一个连续区间值的集合。
+- 从属于一个**枚举列表**的值的集合，`RANGE分区`是从属于一个连续区间值的集合。
 
-与RANGE分区不同，没有类似于*MAXVALUE*的值来匹配所有的情况；**所有被期望的值**都应该被包含进`PARTITION ... VALUES IN (...)`子句。
+- 没有类似于*MAXVALUE*的值来匹配所有的情况；**所有被期望的值**都应该被包含进`PARTITION ... VALUES IN (...)`子句。
 
 使用单个INSERT语句插入多行时，行为取决于表是否使用事务存储引擎：
 
 - 对于支持事务的存储引擎，整个插入语句会被当做一个单一的事务。
-- 对于不支持事务的存储引擎，在包含未匹配值的之前的记录会被插入，自己及其之后的不会。
+- 对于不支持事务的存储引擎，在包含未匹配值的之前的记录会被插入，自己及其之后的不会。 
 
 可以使用`IGNORE`关键字忽略此类错误，如此一来，包含未匹配的值的记录不会插入，其余的都会被插入到数据库并且不会发出错误。
+
+!!!note
+`ob 插入LIST无匹配的值 报错: Table has no partition for value`
 
 ```sql
 MariaDB [MYISAM_TEST]> CREATE TABLE IF NOT EXISTS list_test (ID INT) MAX_ROWS=8 
@@ -217,12 +207,12 @@ MariaDB [MYISAM_TEST]> SELECT * FROM list_test;
 
 这种分区类型可以使用整数类型以外的类型列来定义范围。
 
-RANGE COLUMNS 与 RANGE 分区的不同：
+相比于 RANGE 分区，`RANGE COLUMNS` 分区:
 
-- RANGE COLUMNS 不接受表达式，只接受字段名。
-- RANGE COLUMNS 接受一个或多个字段组合的列表。
-  - RANGE COLUMNS 划分基于元组之间的比较
-- RANGE COLUMNS 不受限于整数类型。其它类型也可以用作分区字段。
+- 不接受表达式，只接受字段名。
+- 接受一个或多个字段组合的列表。
+- 划分基于元组之间的比较
+- 不受限于整数类型。其它类型也可以用作分区字段。
 
 ```sql
 CREATE TABLE table_name
@@ -237,7 +227,7 @@ value_list:
     value[, value][, ...]
 ```
 
-创建举例：
+`e.g`:
 
 ```sql
 mysql> CREATE TABLE rcx (
@@ -285,9 +275,7 @@ mysql> CREATE TABLE rcf (
 ERROR 1493 (HY000): VALUES LESS THAN value must be strictly increasing for each partition
 ```
 
-##### RANGE COLUMNS 划分基于元组之间的比较的解释
-
-举例说明：
+**`e.g`**:
 
 ```sql
 -- 创建分区表
@@ -373,7 +361,7 @@ PARTITIONS 4;
 
 常规HASH分区让每个分区管理的数据都减少了，提高了查询效率；但是在分区管理上的代价太大，故提供了线性分区*LINEAR HASH Partitioning*来解决这个问题。
 
-#### LINEAR HASH 分区
+#### LINEAR HASH 分区 `OB不支持`
 
 线性散列利用线性二次幂算法，而常规散列使用散列函数值的模数。
 
@@ -439,19 +427,18 @@ PARTITIONS num;
 
 注意：不能执行`ALTER TABLE DROP PRIMARY KEY`删除key类型的分区，但是NDB Cluster可以。
 
-#### LINEAR KEY 分区
+#### LINEAR KEY 分区`OB不支持`
 
 与线性HASH分区类似。
 
 ### 子分区
 
-子分区（`Subpartitioning`）也称为复合分区，是对分区表中分区的进一步划分。
+子分区（`Subpartitioning`）也称为复合分区 `二级分区[ob]`，是对分区表中分区的进一步划分。
 
 创建语法见上文。
 
-支持对RANGE分区和LIST分区划分的表再划分，子分区又支持HASH 分区类型和KEY 分区类型。
-
-例：
+mysql 支持对RANGE分区和LIST分区划分的表再划分，子分区又支持HASH 分区类型和KEY 分区类型。
+OceanBase MySQL 模式支持 HASH、RANGE、 LIST、KEY、RANGE COLUMNS 和 LIST COLUMNS 任意两种分区方式的组合
 
 ```sql
 -- 第一种写法
@@ -489,33 +476,8 @@ CREATE TABLE ts (id INT, purchased DATE)
 - 每个分区必须有相同数量的子分区
 - 不允许只对一部分分区定义子分区
 - 在整个表中每个子分区的名称必须是唯一的
-- 当NO_DIR_IN_CREATE服务器SQL模式生效时（不指定该模式也不可用），分区定义中不允许使用DATA DIRECTORY和INDEX DIRECTORY选项。从MySQL 5.5.5开始，在定义子分区时也不允许使用这些选项。实际操作可知：即使你添加了这两个选项，再创建表的时候也会忽略它们。
 
-```sql
--- 选项无效！
-MariaDB [MYISAM_TEST]> CREATE TABLE sub_par_test (id INT) ENGINE=MYISAM PARTITION BY RANGE (id) SUBPARTITION BY HASH (id)
-    -> (
-    -> PARTITION P0 VALUES LESS THAN (10) (
-    -> SUBPARTITION S01 DATA DIRECTORY = '/tmp/sub/data/s01' INDEX DIRECTORY = '/tmp/sub/index/s01',
-    -> SUBPARTITION S02 DATA DIRECTORY = '/tmp/sub/data/s02' INDEX DIRECTORY = '/tmp/sub/index/s02'
-    -> ),
-    -> PARTITION P1 VALUES LESS THAN (MAXVALUE) (
-    -> SUBPARTITION S03 DATA DIRECTORY = '/tmp/sub/data/s03' INDEX DIRECTORY = '/tmp/sub/index/s03',
-    -> SUBPARTITION S04 DATA DIRECTORY = '/tmp/sub/data/s04' INDEX DIRECTORY = '/tmp/sub/index/s04'
-    -> )
-    -> );
-MariaDB [MYISAM_TEST]> SHOW WARNINGS;
-+---------+------+----------------------------------+
-| Level   | Code | Message                          |
-+---------+------+----------------------------------+
-| Warning | 1618 | <DATA DIRECTORY> option ignored  |
-| Warning | 1618 | <INDEX DIRECTORY> option ignored |
-| Warning | 1618 | <DATA DIRECTORY> option ignored  |
-| Warning | 1618 | <INDEX DIRECTORY> option ignored |
-+---------+------+----------------------------------+
-```
-
-### MySQL分区如何处理NULL
+### MySQL分区如何处理NULL **`OB同`**
 
 !!! note
  `NULL`不是一个数字。
@@ -714,7 +676,7 @@ ALTER TABLE t1 ANALYZE PARTITION p3;
 ALTER TABLE t1 REPAIR PARTITION p0,p1;
 ```
 
-- **检查分区**：检查分区是否存在错误。其使用方式与在非分区表使用CHECK TABLE的方式非常相似。
+- **检查分区**：检查分区是否存在错误。
 
 ```sql
 ALTER TABLE trb3 CHECK PARTITION p1;
@@ -722,8 +684,8 @@ ALTER TABLE trb3 CHECK PARTITION p1;
 
 此语句将告诉表中的数据或索引是否已损坏。可以使用`REPAIR PARTITION`修复。
 
-- **重建分区**：删除指定分区以及所有指定分区的数据并创建新分区。其使用方式与在非分区表使用TRUNCATE TABLE的方式非常相似。从MySQL 5.5.0开始。
-
+- **重建分区**：删除指定分区以及所有指定分区的数据并创建新分区。
+- 
 ```
 ALTER TABLE hash_par TRUNCATE PARTITION ALL;
 ```
@@ -748,13 +710,15 @@ ALTER TABLE hash_par TRUNCATE PARTITION ALL;
 
 - 创建分区表之后不要改变模式`MySQL mode`
 
-- 性能方面
+<details open>
+<summary><code>性能方面</code></summary>
+<br>
 
   - 文件系统操作。分区与重新分区的操作基于文件系统对它们的限制，所以速度的快慢与文件系统的类型、字符集、磁盘速度等都有关系。特别的，应该保证[`large_files_support`](https://dev.mysql.com/doc/refman/5.5/en/server-system-variables.html#sysvar_large_files_support)可用并且合适地设置 [`open_files_limit`](https://dev.mysql.com/doc/refman/5.5/en/server-system-variables.html#sysvar_open_files_limit)。
-  - MyISAM和分区文件描述符的用法。MyISAM为每个分区使用两个文件描述符，**并且在操作数据的时候会使用所有的分区**。在你重新划分分区后，MyISAM不会删除原来的文件描述符，而是继续扩张新的分区大小的数量，这是MyISAM的设计决定的。比如原来有100个分区，那么就有200个文件去存储，现在重新划分，变成101个分区。此时有402个文件去存储。
   - 表锁。分区操作会在表上获取写锁。读取表的操作几乎不会受到影响；一旦分区操作完成，就执行挂起的INSERT和UPDATE操作。
   - 存储引擎。对于MyISAM表而言，分区操作，查询和更新操作通常比使用InnoDB或NDB表更快。
-  - LOAD DATA。在MySQL 5.5中，LOAD DATA使用缓冲来提高性能。您应该知道每个分区的缓冲区使用130 KB内存来实现此目的。
+  - LOAD DATA
+</details>
 
 - 最大分区数。一张表最多有1024（包括子分区）个分区，NDB存储引擎不受此限制。
 
@@ -762,7 +726,21 @@ ALTER TABLE hash_par TRUNCATE PARTITION ALL;
 
 - 每个分区的**key caches**。在MySQL 5.5中，CACHE INDEX和LOAD INDEX INTO CACHE语句支持MyISAM分区表的key caches。
 
-- InnoDB分区表不支持外键。
+- InnoDB分区表不支持外键 
+
+```sql
+-- mysql: Foreign keys are not yet supported in conjunction with partitioning
+-- ob: 正常执行
+CREATE TABLE Persons(PersonID INT PRIMARY KEY)
+
+CREATE TABLE Orders (
+    OrderID int NOT NULL,
+    OrderNumber int NOT NULL,
+    PersonID int,
+    PRIMARY KEY (OrderID),
+    FOREIGN KEY (PersonID) REFERENCES Persons(PersonID)
+) PARTITION BY HASH(OrderID) PARTITIONS 4;
+```
 
 - ALTER TABLE ... ORDER BY。导致仅在每个分区内对记录排序。
 
@@ -776,7 +754,7 @@ ALTER TABLE hash_par TRUNCATE PARTITION ALL;
 
 - 分区键的类型。分区键必须是整数列或解析为整数的表达式。可以接受NULL值。不能是子查询。
 
-- 子分区。只有`RANGE`和`LIST`表支持子分区，并且子分区的类型必须是`HASH`或`KEY`分区。
+- 子分区。只有`RANGE`和`LIST`表支持子分区，并且子分区的类型必须是`HASH`或`KEY`分区 `mysql限制`
 
 - SUBPARTITION BY KEY 要求必须指明分区的字段或字段列表。
 
@@ -789,9 +767,11 @@ ALTER TABLE hash_par TRUNCATE PARTITION ALL;
 
   - [**mysqlcheck**](https://dev.mysql.com/doc/refman/5.5/en/mysqlcheck.html), [**myisamchk**](https://dev.mysql.com/doc/refman/5.5/en/myisamchk.html), and [**myisampack**](https://dev.mysql.com/doc/refman/5.5/en/myisampack.html)不支持分区表。
 
-### 分区键，主键，唯一键
+### 分区键，主键，唯一键 
 
-三者的关系：分区表的分区表达式中使用的所有列必须是表可能具有的每个唯一键的一部分（主键被定义为唯一键）。换句话说：**表上的每个唯一键必须使用表的分区表达式中的每一列。**如果表中没有唯一键则不受此约束。
+三者的关系：分区表的分区表达式中使用的所有列必须是表可能具有的每个唯一键的一部分（主键被定义为唯一键）。换句话说：**表上的每个唯一键`mysql`必须使用表的分区表达式中的每一列。**如果表中没有唯一键则不受此约束。
+
+`ob分区只有主键限制`:每个主键必须包含所有分区键
 
 例如下面这些是合法的：
 

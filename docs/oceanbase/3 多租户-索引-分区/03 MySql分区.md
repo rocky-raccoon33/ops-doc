@@ -68,7 +68,7 @@ subpartition_definition:
 
 指定表的分区数`PARTITIONS num`时，必须将其表示为不带前导零的非零正整数
 
-分区表上没有主键/唯一键 `或者` 使用主键/唯一键都必须包含分区键  <span style="color:red"> **`ob无唯一键限制`** </span>
+分区表上没有主键/唯一键 `或者` 使用主键/唯一键都必须包含分区键  <span style="color:red"> **ob无唯一键限制** </span>
 
 **分区的名字不区分大小写**
 
@@ -712,7 +712,7 @@ ALTER TABLE hash_par TRUNCATE PARTITION ALL;
 
 - 每个分区的**key caches**。在MySQL 5.5中，CACHE INDEX和LOAD INDEX INTO CACHE语句支持MyISAM分区表的key caches。
 
-- InnoDB分区表不支持外键 `OB支持`
+- InnoDB分区表不支持外键
 
 ```sql
 -- InnoDB: Foreign keys are not yet supported in conjunction with partitioning
@@ -753,7 +753,7 @@ CREATE TABLE Orders (
 
 三者的关系：分区表的分区表达式中使用的所有列必须是表可能具有的每个唯一键的一部分（主键被定义为唯一键）。换句话说：**表上的每个唯一键`mysql`必须使用表的分区表达式中的每一列。**如果表中没有唯一键则不受此约束。
 
-`ob分区只有主键限制`:每个主键必须包含所有分区键
+<span style="color:red"> **OB只有主键约束** </span>: 每个主键必须包含所有分区键
 
 例如下面这些是合法的：
 

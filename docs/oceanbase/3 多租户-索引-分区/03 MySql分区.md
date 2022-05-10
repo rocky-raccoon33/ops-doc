@@ -68,7 +68,7 @@ subpartition_definition:
 
 指定表的分区数`PARTITIONS num`时，必须将其表示为不带前导零的非零正整数
 
-分区表上没有主键/唯一键 `或者` 使用主键/唯一键都必须包含分区键  <span style="color:red"> **ob无唯一键限制`** </span>
+分区表上没有主键/唯一键 `或者` 使用主键/唯一键都必须包含分区键  <span style="color:red"> **`ob无唯一键限制`** </span>
 
 **分区的名字不区分大小写**
 

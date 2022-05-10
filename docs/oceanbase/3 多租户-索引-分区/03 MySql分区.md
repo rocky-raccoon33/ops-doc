@@ -437,8 +437,9 @@ PARTITIONS num;
 
 创建语法见上文。
 
-mysql 支持对RANGE分区和LIST分区划分的表再划分，子分区又支持HASH 分区类型和KEY 分区类型。
-OceanBase MySQL 模式支持 HASH、RANGE、 LIST、KEY、RANGE COLUMNS 和 LIST COLUMNS 任意两种分区方式的组合
+mysql 支持对`RANGE分区`和`LIST分区`划分的表再划分，子分区又支持`HASH分区`类型`和KEY分区`类型。
+
+OceanBase MySQL 模式支持 `HASH`、`RANGE`、 `LIST`、`KEY`、`RANGE COLUMNS` 和 `LIST COLUMNS` 任意两种分区方式的组合
 
 ```sql
 -- 第一种写法

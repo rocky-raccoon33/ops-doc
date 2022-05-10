@@ -82,7 +82,7 @@ subpartition_definition:
 SELECT * FROM INFORMATION_SCHEMA.PARTITIONS WHERE TABLE_NAME = 'table_name';
 ```
 
-使用`EXPLAIN PARTITIONS select_statement`查看使用了哪些分区
+使用`EXPLAIN select_statement`查看使用了哪些分区
 
 ## 删除分区
 
@@ -495,6 +495,24 @@ CREATE TABLE ts (id INT, purchased DATE)
 #### HASH and KEY partitioning
 
 NULL值被视为**零**。
+
+## 分区裁剪 `OB同`
+
+查询时带上`分区KEY` mysql仅会查询相关的分区数据
+
+```sql
+mysql> create table range_t
+(int a NOT NULL,int b NOT NULL) partition by range (a)
+ (partition p1 values less than (100),
+ partition p2 values less than maxvalue);
+mysql> explain select * from range_t where a < 10;
++----+-------------+---------+------------+------+---------------+------+---------+------+------+----------+-------------+
+| id | select_type | table   | partitions | type | possible_keys | key  | key_len | ref  | rows | filtered | Extra       |
++----+-------------+---------+------------+------+---------------+------+---------+------+------+----------+-------------+
+|  1 | SIMPLE      | range_t | p1         | ALL  | NULL          | NULL | NULL    | NULL |    1 |   100.00 | Using where |
++----+-------------+---------+------------+------+---------------+------+---------+------+------+----------+-------------+
+1 row in set, 1 warning (0.00 sec)
+```
 
 ## 分区管理
 

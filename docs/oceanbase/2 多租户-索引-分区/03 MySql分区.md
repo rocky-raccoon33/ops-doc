@@ -66,7 +66,7 @@ subpartition_definition:
 
 - 指定表的分区数`PARTITIONS num`时，必须将其表示为不带前导零的非零正整数
 
-- 分区表上没有主键/唯一键 `或者` 使用主键/唯一键都必须包含分区键 `ob无唯一键限制`
+- 分区表上没有主键/唯一键 `或者` 使用主键/唯一键都必须包含分区键 **`ob无唯一键限制`**
 
 - **分区的名字不区分大小写**
 
@@ -171,7 +171,7 @@ PARTITION BY RANGE ( YEAR(separated) ) (
 可以使用`IGNORE`关键字忽略此类错误，如此一来，包含未匹配的值的记录不会插入，其余的都会被插入到数据库并且不会发出错误。
 
 !!!note
-`ob 插入LIST无匹配的值 报错:Table has no partition for value`
+`ob 插入LIST无匹配的值 报错: Table has no partition for value`
 
 ```sql
 MariaDB [MYISAM_TEST]> CREATE TABLE IF NOT EXISTS list_test (ID INT) MAX_ROWS=8 
@@ -275,7 +275,7 @@ mysql> CREATE TABLE rcf (
 ERROR 1493 (HY000): VALUES LESS THAN value must be strictly increasing for each partition
 ```
 
-`e.g`:
+**`e.g`**:
 
 ```sql
 -- 创建分区表
@@ -477,7 +477,7 @@ CREATE TABLE ts (id INT, purchased DATE)
 - 不允许只对一部分分区定义子分区
 - 在整个表中每个子分区的名称必须是唯一的
 
-### MySQL分区如何处理NULL `OB同`
+### MySQL分区如何处理NULL **`OB同`**
 
 !!! note
  `NULL`不是一个数字。
@@ -676,7 +676,7 @@ ALTER TABLE t1 ANALYZE PARTITION p3;
 ALTER TABLE t1 REPAIR PARTITION p0,p1;
 ```
 
-- **检查分区**：检查分区是否存在错误。其使用方式与在非分区表使用CHECK TABLE的方式非常相似。
+- **检查分区**：检查分区是否存在错误。
 
 ```sql
 ALTER TABLE trb3 CHECK PARTITION p1;
@@ -684,8 +684,8 @@ ALTER TABLE trb3 CHECK PARTITION p1;
 
 此语句将告诉表中的数据或索引是否已损坏。可以使用`REPAIR PARTITION`修复。
 
-- **重建分区**：删除指定分区以及所有指定分区的数据并创建新分区。其使用方式与在非分区表使用TRUNCATE TABLE的方式非常相似。从MySQL 5.5.0开始。
-
+- **重建分区**：删除指定分区以及所有指定分区的数据并创建新分区。
+- 
 ```
 ALTER TABLE hash_par TRUNCATE PARTITION ALL;
 ```
@@ -710,12 +710,15 @@ ALTER TABLE hash_par TRUNCATE PARTITION ALL;
 
 - 创建分区表之后不要改变模式`MySQL mode`
 
-- 性能方面
+<details open>
+<summary><code>性能方面</code></summary>
+<br>
+
   - 文件系统操作。分区与重新分区的操作基于文件系统对它们的限制，所以速度的快慢与文件系统的类型、字符集、磁盘速度等都有关系。特别的，应该保证[`large_files_support`](https://dev.mysql.com/doc/refman/5.5/en/server-system-variables.html#sysvar_large_files_support)可用并且合适地设置 [`open_files_limit`](https://dev.mysql.com/doc/refman/5.5/en/server-system-variables.html#sysvar_open_files_limit)。
-  - MyISAM和分区文件描述符的用法。MyISAM为每个分区使用两个文件描述符，**并且在操作数据的时候会使用所有的分区**。在你重新划分分区后，MyISAM不会删除原来的文件描述符，而是继续扩张新的分区大小的数量，这是MyISAM的设计决定的。比如原来有100个分区，那么就有200个文件去存储，现在重新划分，变成101个分区。此时有402个文件去存储。
   - 表锁。分区操作会在表上获取写锁。读取表的操作几乎不会受到影响；一旦分区操作完成，就执行挂起的INSERT和UPDATE操作。
   - 存储引擎。对于MyISAM表而言，分区操作，查询和更新操作通常比使用InnoDB或NDB表更快。
-  - LOAD DATA。在MySQL 5.5中，LOAD DATA使用缓冲来提高性能。您应该知道每个分区的缓冲区使用130 KB内存来实现此目的。
+  - LOAD DATA
+</details>
 
 - 最大分区数。一张表最多有1024（包括子分区）个分区，NDB存储引擎不受此限制。
 
@@ -764,9 +767,11 @@ CREATE TABLE Orders (
 
   - [**mysqlcheck**](https://dev.mysql.com/doc/refman/5.5/en/mysqlcheck.html), [**myisamchk**](https://dev.mysql.com/doc/refman/5.5/en/myisamchk.html), and [**myisampack**](https://dev.mysql.com/doc/refman/5.5/en/myisampack.html)不支持分区表。
 
-### 分区键，主键，唯一键 `ob一级分区无限制 二级分区报错`
+### 分区键，主键，唯一键 
 
-三者的关系：分区表的分区表达式中使用的所有列必须是表可能具有的每个唯一键的一部分（主键被定义为唯一键）。换句话说：**表上的每个唯一键必须使用表的分区表达式中的每一列。**如果表中没有唯一键则不受此约束。
+三者的关系：分区表的分区表达式中使用的所有列必须是表可能具有的每个唯一键的一部分（主键被定义为唯一键）。换句话说：**表上的每个唯一键`mysql`必须使用表的分区表达式中的每一列。**如果表中没有唯一键则不受此约束。
+
+`ob分区只有主键限制`:每个主键必须包含所有分区键
 
 例如下面这些是合法的：
 

@@ -1,13 +1,13 @@
 site_name: ops docs
 theme:
-  name: journal
-# markdown_extensions:
-#   - pymdownx.superfences
-#   - pymdownx.highlight
-#   - pymdownx.keys
-#   - pymdownx.mark
-#   - pymdownx.tabbed
-#   - admonition
-#   - footnotes
-#   - toc:
-#       permalink: true
+  name: material
+markdown_extensions:
+  - pymdownx.superfences
+  - pymdownx.highlight
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.tabbed
+  - admonition
+  - footnotes
+  - toc:
+      permalink: true

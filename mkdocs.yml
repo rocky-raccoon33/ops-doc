@@ -1,6 +1,6 @@
 site_name: ops docs
 theme:
-  name: Journal
+  name: journal
 # markdown_extensions:
 #   - pymdownx.superfences
 #   - pymdownx.highlight

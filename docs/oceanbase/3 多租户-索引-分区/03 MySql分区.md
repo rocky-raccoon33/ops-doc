@@ -9,7 +9,7 @@
 
 - 可以轻松的移除或添加分区达到删除数据或新增存储数据的空间
 
-- 一些查询可以得到很好的优化 `e.g: 指定分区查询`
+- 一些查询可以得到很好的优化 `举例: 指定分区查询`
 
 - 跨多个磁盘分散数据查询，获得更大的吞吐量
 
@@ -62,13 +62,13 @@ subpartition_definition:
 ```
 
 !!!note
-- 分区选项一定要放在最后
+分区选项一定要放在最后
 
-- 指定表的分区数`PARTITIONS num`时，必须将其表示为不带前导零的非零正整数
+指定表的分区数`PARTITIONS num`时，必须将其表示为不带前导零的非零正整数
 
-- 分区表上没有主键/唯一键 `或者` 使用主键/唯一键都必须包含分区键 **`ob无唯一键限制`**
+分区表上没有主键/唯一键 `或者` 使用主键/唯一键都必须包含分区键 **`ob无唯一键限制`**
 
-- **分区的名字不区分大小写**
+**分区的名字不区分大小写**
 
 ## 查看分区
 
@@ -109,15 +109,13 @@ ALTER TABLE table_name TRUNCATE/DROP PARTITION partition_name;
 - 支持使用`UNIX_TIMESTAMP,YEAR`等函数进行分区
 
 ```sql
+-- 使用整型的字段作为分区键
 CREATE TABLE `range_test` (
   `ID` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8
-/*!50100 PARTITION BY RANGE (ID)
+) PARTITION BY RANGE (ID)
 (PARTITION P0 VALUES LESS THAN (5) ENGINE = InnoDB,
- PARTITION P1 VALUES LESS THAN (10) ENGINE = InnoDB,
- -- MAXVALUE表示最大的可能的整数值
- PARTITION P3 VALUES LESS THAN MAXVALUE ENGINE = InnoDB) */
--- /*!...*/ 是MySQL的扩展特性。是一种特殊的注释，其他的数据库产品当然不会执行。mysql特殊处理，会选择性的执行。特别注意 50100，它表示5.01.00 版本或者更高的版本，才执行。
+ PARTITION P1 VALUES LESS THAN (10) ENGINE = InnoDB)
+
 -- 使用DATE类型的字段作为分区键
 CREATE TABLE members (
     username VARCHAR(16) NOT NULL,
@@ -128,6 +126,7 @@ PARTITION BY RANGE COLUMNS(joined) (
     PARTITION p0 VALUES LESS THAN ('1960-01-01'),
     PARTITION p1 VALUES LESS THAN MAXVALUE
 );
+
 -- 使用UNIX_TIMESTAMP函数进行分区
 CREATE TABLE quarterly_report_status (
     report_id INT NOT NULL,
@@ -137,6 +136,7 @@ PARTITION BY RANGE ( UNIX_TIMESTAMP(report_updated) ) (
     PARTITION p0 VALUES LESS THAN ( UNIX_TIMESTAMP('2008-01-01 00:00:00') ),
     PARTITION p1 VALUES LESS THAN (MAXVALUE)
 );
+
 -- 使用YEAR等函数进行分区
 CREATE TABLE employees (
     id INT NOT NULL,
@@ -166,7 +166,7 @@ PARTITION BY RANGE ( YEAR(separated) ) (
 使用单个INSERT语句插入多行时，行为取决于表是否使用事务存储引擎：
 
 - 对于支持事务的存储引擎，整个插入语句会被当做一个单一的事务。
-- 对于不支持事务的存储引擎，在包含未匹配值的之前的记录会被插入，自己及其之后的不会。 
+- 对于不支持事务的存储引擎，在包含未匹配值的之前的记录会被插入，自己及其之后的不会。
 
 可以使用`IGNORE`关键字忽略此类错误，如此一来，包含未匹配的值的记录不会插入，其余的都会被插入到数据库并且不会发出错误。
 
@@ -227,7 +227,7 @@ value_list:
     value[, value][, ...]
 ```
 
-`e.g`:
+**`举例`**:
 
 ```sql
 mysql> CREATE TABLE rcx (
@@ -275,7 +275,7 @@ mysql> CREATE TABLE rcf (
 ERROR 1493 (HY000): VALUES LESS THAN value must be strictly increasing for each partition
 ```
 
-**`e.g`**:
+**`举例`**:
 
 ```sql
 -- 创建分区表
@@ -386,7 +386,7 @@ V = POWER(2, CEILING(LOG(2, num)))
     - Set *V* = *V* / 2
     - Set *N* = *N* & (*V* - 1)
 
-举例：
+**`举例`**：
 
 ```sql
 CREATE TABLE t1 (col1 INT, col2 CHAR(5), col3 DATE)
@@ -437,8 +437,9 @@ PARTITIONS num;
 
 创建语法见上文。
 
-mysql 支持对RANGE分区和LIST分区划分的表再划分，子分区又支持HASH 分区类型和KEY 分区类型。
-OceanBase MySQL 模式支持 HASH、RANGE、 LIST、KEY、RANGE COLUMNS 和 LIST COLUMNS 任意两种分区方式的组合
+mysql 支持对`RANGE分区`和`LIST分区`划分的表再划分，子分区又支持`HASH分区`类型`和KEY分区`类型。
+
+OceanBase MySQL 模式支持 `HASH`、`RANGE`、 `LIST`、`KEY`、`RANGE COLUMNS` 和 `LIST COLUMNS` 任意两种分区方式的组合
 
 ```sql
 -- 第一种写法
@@ -606,36 +607,9 @@ ALTER TABLE table_name ADD PARTITION PARTITIONS number
 子分区会自动的进行相应的操作：
 
 ```sql
-MariaDB [MYISAM_TEST]> SHOW CREATE TABLE sub_par_test \G;
-CREATE TABLE `sub_par_test` (
-  `id` int(11) DEFAULT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8
-/*!50100 PARTITION BY RANGE (id)
-SUBPARTITION BY HASH (id)
-(PARTITION P0 VALUES LESS THAN (10)
- (SUBPARTITION S01 ENGINE = MyISAM,
-  SUBPARTITION S02 ENGINE = MyISAM),
- PARTITION P1 VALUES LESS THAN MAXVALUE
- (SUBPARTITION S03 ENGINE = MyISAM,
-  SUBPARTITION S04 ENGINE = MyISAM)) */
 MariaDB [MYISAM_TEST]> ALTER TABLE sub_par_test REORGANIZE PARTITION P0 INTO (PARTITION P00 VALUES LESS THAN (5), PARTITION P01 VALUES LESS THAN (10));
 Query OK, 2 rows affected (0.01 sec)
 Records: 2  Duplicates: 0  Warnings: 0
-MariaDB [MYISAM_TEST]> SHOW CREATE TABLE sub_par_test \G;
-CREATE TABLE `sub_par_test` (
-  `id` int(11) DEFAULT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8
-/*!50100 PARTITION BY RANGE (id)
-SUBPARTITION BY HASH (id)
-(PARTITION P00 VALUES LESS THAN (5)
- (SUBPARTITION P00sp0 ENGINE = MyISAM,
-  SUBPARTITION P00sp1 ENGINE = MyISAM),
- PARTITION P01 VALUES LESS THAN (10)
- (SUBPARTITION P01sp0 ENGINE = MyISAM,
-  SUBPARTITION P01sp1 ENGINE = MyISAM),
- PARTITION P1 VALUES LESS THAN MAXVALUE
- (SUBPARTITION S03 ENGINE = MyISAM,
-  SUBPARTITION S04 ENGINE = MyISAM)) */
 ```
 
 ### 分区的维护
@@ -685,8 +659,8 @@ ALTER TABLE trb3 CHECK PARTITION p1;
 此语句将告诉表中的数据或索引是否已损坏。可以使用`REPAIR PARTITION`修复。
 
 - **重建分区**：删除指定分区以及所有指定分区的数据并创建新分区。
-- 
-```
+  
+```sql
 ALTER TABLE hash_par TRUNCATE PARTITION ALL;
 ```
 
@@ -710,23 +684,13 @@ ALTER TABLE hash_par TRUNCATE PARTITION ALL;
 
 - 创建分区表之后不要改变模式`MySQL mode`
 
-<details open>
-<summary><code>性能方面</code></summary>
-<br>
-
-  - 文件系统操作。分区与重新分区的操作基于文件系统对它们的限制，所以速度的快慢与文件系统的类型、字符集、磁盘速度等都有关系。特别的，应该保证[`large_files_support`](https://dev.mysql.com/doc/refman/5.5/en/server-system-variables.html#sysvar_large_files_support)可用并且合适地设置 [`open_files_limit`](https://dev.mysql.com/doc/refman/5.5/en/server-system-variables.html#sysvar_open_files_limit)。
-  - 表锁。分区操作会在表上获取写锁。读取表的操作几乎不会受到影响；一旦分区操作完成，就执行挂起的INSERT和UPDATE操作。
-  - 存储引擎。对于MyISAM表而言，分区操作，查询和更新操作通常比使用InnoDB或NDB表更快。
-  - LOAD DATA
-</details>
-
 - 最大分区数。一张表最多有1024（包括子分区）个分区，NDB存储引擎不受此限制。
 
 - 不支持查询缓存。
 
 - 每个分区的**key caches**。在MySQL 5.5中，CACHE INDEX和LOAD INDEX INTO CACHE语句支持MyISAM分区表的key caches。
 
-- InnoDB分区表不支持外键 
+- InnoDB分区表不支持外键
 
 ```sql
 -- mysql: Foreign keys are not yet supported in conjunction with partitioning
@@ -760,14 +724,11 @@ CREATE TABLE Orders (
 
 - 不支持**DELAYED**选项。不支持[`INSERT DELAYED`](https://dev.mysql.com/doc/refman/5.5/en/insert-delayed.html)。
 
-- **DATA DIRECTORY and INDEX DIRECTORY**选项。
+- 性能方面 (1)`文件系统操作` (2)`表锁:分区操作会在表上获取写锁。读取表的操作几乎不会受到影响；一旦分区操作完成，就执行挂起的INSERT和UPDATE操作` (3)`LOAD DATA` (4)`存储引擎`
+  
+- blah blah
 
-  - 用于表级选项会被忽略。
-  - Windows不支持这两个选项。
-
-  - [**mysqlcheck**](https://dev.mysql.com/doc/refman/5.5/en/mysqlcheck.html), [**myisamchk**](https://dev.mysql.com/doc/refman/5.5/en/myisamchk.html), and [**myisampack**](https://dev.mysql.com/doc/refman/5.5/en/myisampack.html)不支持分区表。
-
-### 分区键，主键，唯一键 
+### 分区键，主键，唯一键
 
 三者的关系：分区表的分区表达式中使用的所有列必须是表可能具有的每个唯一键的一部分（主键被定义为唯一键）。换句话说：**表上的每个唯一键`mysql`必须使用表的分区表达式中的每一列。**如果表中没有唯一键则不受此约束。
 

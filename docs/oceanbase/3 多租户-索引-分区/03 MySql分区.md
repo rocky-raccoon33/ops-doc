@@ -68,7 +68,7 @@ subpartition_definition:
 
 指定表的分区数`PARTITIONS num`时，必须将其表示为不带前导零的非零正整数
 
-分区表上没有主键/唯一键 `或者` 使用主键/唯一键都必须包含分区键 **`ob无唯一键限制`**
+分区表上没有主键/唯一键 `或者` 使用主键/唯一键都必须包含分区键  <span style="color:red"> **ob无唯一键限制`** </span>
 
 **分区的名字不区分大小写**
 
@@ -364,7 +364,7 @@ PARTITIONS 4;
 
 常规HASH分区让每个分区管理的数据都减少了，提高了查询效率；但是在分区管理上的代价太大，故提供了线性分区*LINEAR HASH Partitioning*来解决这个问题。
 
-#### LINEAR HASH 分区 `OB不支持`
+#### LINEAR HASH 分区 <span style="color:red"> **mysql** </span>
 
 线性散列利用线性二次幂算法，而常规散列使用散列函数值的模数。
 
@@ -430,7 +430,7 @@ PARTITIONS num;
 
 注意：不能执行`ALTER TABLE DROP PRIMARY KEY`删除key类型的分区，但是NDB Cluster可以。
 
-#### LINEAR KEY 分区`OB不支持`
+#### LINEAR KEY 分区 <span style="color:red"> **mysql** </span>
 
 与线性HASH分区类似。
 
@@ -481,7 +481,7 @@ CREATE TABLE ts (id INT, purchased DATE)
 - 不允许只对一部分分区定义子分区
 - 在整个表中每个子分区的名称必须是唯一的
 
-### MySQL分区如何处理NULL **`OB同`**
+### MySQL分区如何处理NULL
 
 !!! note
  `NULL`不是一个数字。
@@ -501,7 +501,7 @@ NULL值被视为**零**。
 
 ---
 
-## 分区裁剪 `OB同`
+## 分区裁剪
 
 查询时带上`分区KEY` mysql仅会查询相关的分区数据
 

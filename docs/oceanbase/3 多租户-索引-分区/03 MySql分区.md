@@ -13,6 +13,8 @@
 
 - 跨多个磁盘分散数据查询，获得更大的吞吐量
 
+---
+
 ## 分区表的创建
 
 ```sql
@@ -70,6 +72,8 @@ subpartition_definition:
 
 **分区的名字不区分大小写**
 
+---
+
 ## 查看分区
 
 使用`SHOW CREATE TABLE`查看分区表的分区子句。
@@ -84,6 +88,8 @@ SELECT * FROM INFORMATION_SCHEMA.PARTITIONS WHERE TABLE_NAME = 'table_name';
 
 使用`EXPLAIN select_statement`查看使用了哪些分区
 
+---
+
 ## 删除分区
 
 和删除表一样，使用 `TRUNCATE`/`DROP` 清空分区（比`DELETE`要快）
@@ -92,6 +98,8 @@ SELECT * FROM INFORMATION_SCHEMA.PARTITIONS WHERE TABLE_NAME = 'table_name';
 -- DROP PARTITION can only be used on RANGE/LIST partitions
 ALTER TABLE table_name TRUNCATE/DROP PARTITION partition_name;
 ```
+
+---
 
 ## 分区类型
 
@@ -491,6 +499,8 @@ CREATE TABLE ts (id INT, purchased DATE)
 
 NULL值被视为**零**。
 
+---
+
 ## 分区裁剪 `OB同`
 
 查询时带上`分区KEY` mysql仅会查询相关的分区数据
@@ -508,6 +518,8 @@ mysql> explain select * from range_t where a < 10;
 +----+-------------+---------+------------+------+---------------+------+---------+------+------+----------+-------------+
 1 row in set, 1 warning (0.00 sec)
 ```
+
+---
 
 ## 分区管理
 
@@ -540,8 +552,6 @@ ALTER TABLE tt ADD PARTITION (PARTITION p2 VALUES IN (7, 14, 21), PARTITION p3 V
 ```
 
 LIST分区不能包含重复的值
-
-HASH 分区无限制
 
 #### 重组
 
@@ -579,7 +589,7 @@ ALTER TABLE members REORGANIZE PARTITION p0,p1,p2,p3 INTO (
 ```
 
 !!! warning
- RANGE分区不能跨范围重组。例如：不能重组‘p0,p2’，而跳过p1。
+ RANGE分区`不能跨范围重组`。例如：不能重组‘p0,p2’，而跳过p1。
  不能使用重组语句改变分区类型，以及改变分区键*expr*；使用`ALTER TABLE ... PARTITION BY ...`达到这个目的。
 
 ### HASH and KEY 的管理
@@ -678,6 +688,8 @@ ALTER TABLE hash_par TRUNCATE PARTITION ALL;
 
 `ANALYZE`, `CHECK`, `OPTIMIZE`, `REBUILD`, `REPAIR`, and `TRUNCATE`操作不支持子分区。
 
+---
+
 ## 分区限制
 
 - 划分表达式不允许的结构：
@@ -700,11 +712,10 @@ ALTER TABLE hash_par TRUNCATE PARTITION ALL;
 
 - 每个分区的**key caches**。在MySQL 5.5中，CACHE INDEX和LOAD INDEX INTO CACHE语句支持MyISAM分区表的key caches。
 
-- InnoDB分区表不支持外键
+- InnoDB分区表不支持外键 `OB支持`
 
 ```sql
--- mysql: Foreign keys are not yet supported in conjunction with partitioning
--- ob: 正常执行
+-- InnoDB: Foreign keys are not yet supported in conjunction with partitioning
 CREATE TABLE Persons(PersonID INT PRIMARY KEY)
 
 CREATE TABLE Orders (

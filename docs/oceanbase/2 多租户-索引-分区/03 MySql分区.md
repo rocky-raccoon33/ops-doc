@@ -62,13 +62,13 @@ subpartition_definition:
 ```
 
 !!!note
-- 分区选项一定要放在最后
+分区选项一定要放在最后
 
-- 指定表的分区数`PARTITIONS num`时，必须将其表示为不带前导零的非零正整数
+指定表的分区数`PARTITIONS num`时，必须将其表示为不带前导零的非零正整数
 
-- 分区表上没有主键/唯一键 `或者` 使用主键/唯一键都必须包含分区键 **`ob无唯一键限制`**
+分区表上没有主键/唯一键 `或者` 使用主键/唯一键都必须包含分区键 **`ob无唯一键限制`**
 
-- **分区的名字不区分大小写**
+**分区的名字不区分大小写**
 
 ## 查看分区
 
@@ -685,8 +685,8 @@ ALTER TABLE trb3 CHECK PARTITION p1;
 此语句将告诉表中的数据或索引是否已损坏。可以使用`REPAIR PARTITION`修复。
 
 - **重建分区**：删除指定分区以及所有指定分区的数据并创建新分区。
-- 
-```
+  
+```sql
 ALTER TABLE hash_par TRUNCATE PARTITION ALL;
 ```
 
@@ -709,16 +709,6 @@ ALTER TABLE hash_par TRUNCATE PARTITION ALL;
 - MySQL 5.5 不支持在分区表中使用`HANDLER`语句
 
 - 创建分区表之后不要改变模式`MySQL mode`
-
-<details open>
-<summary><code>性能方面</code></summary>
-<br>
-
-  - 文件系统操作。分区与重新分区的操作基于文件系统对它们的限制，所以速度的快慢与文件系统的类型、字符集、磁盘速度等都有关系。特别的，应该保证[`large_files_support`](https://dev.mysql.com/doc/refman/5.5/en/server-system-variables.html#sysvar_large_files_support)可用并且合适地设置 [`open_files_limit`](https://dev.mysql.com/doc/refman/5.5/en/server-system-variables.html#sysvar_open_files_limit)。
-  - 表锁。分区操作会在表上获取写锁。读取表的操作几乎不会受到影响；一旦分区操作完成，就执行挂起的INSERT和UPDATE操作。
-  - 存储引擎。对于MyISAM表而言，分区操作，查询和更新操作通常比使用InnoDB或NDB表更快。
-  - LOAD DATA
-</details>
 
 - 最大分区数。一张表最多有1024（包括子分区）个分区，NDB存储引擎不受此限制。
 
@@ -760,12 +750,13 @@ CREATE TABLE Orders (
 
 - 不支持**DELAYED**选项。不支持[`INSERT DELAYED`](https://dev.mysql.com/doc/refman/5.5/en/insert-delayed.html)。
 
-- **DATA DIRECTORY and INDEX DIRECTORY**选项。
+- 性能方面
+  - 文件系统操作
+  - 表锁。分区操作会在表上获取写锁。读取表的操作几乎不会受到影响；一旦分区操作完成，就执行挂起的INSERT和UPDATE操作。
+  - 存储引擎。对于MyISAM表而言，分区操作，查询和更新操作通常比使用InnoDB或NDB表更快。
+  - LOAD DATA
 
-  - 用于表级选项会被忽略。
-  - Windows不支持这两个选项。
-
-  - [**mysqlcheck**](https://dev.mysql.com/doc/refman/5.5/en/mysqlcheck.html), [**myisamchk**](https://dev.mysql.com/doc/refman/5.5/en/myisamchk.html), and [**myisampack**](https://dev.mysql.com/doc/refman/5.5/en/myisampack.html)不支持分区表。
+- blah blah
 
 ### 分区键，主键，唯一键 
 

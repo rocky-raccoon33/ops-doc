@@ -86,9 +86,10 @@ SELECT * FROM INFORMATION_SCHEMA.PARTITIONS WHERE TABLE_NAME = 'table_name';
 
 ## 删除分区
 
-和删除表一样，使用 `TRUNCATE`/`DROP` 清空分区（比`DELETE`要快），
+和删除表一样，使用 `TRUNCATE`/`DROP` 清空分区（比`DELETE`要快）
 
 ```sql
+-- DROP PARTITION can only be used on RANGE/LIST partitions
 ALTER TABLE table_name TRUNCATE/DROP PARTITION partition_name;
 ```
 
@@ -529,11 +530,6 @@ mysql> explain select * from range_t where a < 10;
 ALTER TABLE ... DROP PARTITION ...
 ```
 
-```sql
-mysql> ALTER TABLE tr DROP PARTITION p2;
-Query OK, 0 rows affected (0.03 sec)
-```
-
  分区中的数据同时也被删除。`NDBCLUSTER`存储引擎不支持该操作。
 
 #### 添加
@@ -549,7 +545,9 @@ ALTER TABLE members ADD PARTITION (PARTITION p3 VALUES LESS THAN (2010));
 ALTER TABLE tt ADD PARTITION (PARTITION p2 VALUES IN (7, 14, 21), PARTITION p3 VALUES IN (1));
 ```
 
-LIST分区不能包含**重复的值**。
+LIST分区不能包含重复的值
+
+HASH 分区无限制
 
 #### 重组
 

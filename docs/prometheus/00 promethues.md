@@ -4,7 +4,11 @@
 
 [> Prometheus](http://localhost:3000/)
 
-[`> Grafana`](http://localhost:9090)`
+[> Grafana](http://localhost:9090)
+
+[> PromQL Cheat Sheet](https://promlabs.com/promql-cheat-sheet/)
+
+[> QUERYING PROMETHEUS](https://prometheus.io/docs/prometheus/latest/querying/basics/)
 
 ```yml
 # prometheus config

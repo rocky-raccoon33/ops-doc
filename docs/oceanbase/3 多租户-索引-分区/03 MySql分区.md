@@ -116,7 +116,6 @@ CREATE TABLE `range_test` (
 ) PARTITION BY RANGE (ID)
 (PARTITION P0 VALUES LESS THAN (5) ENGINE = InnoDB,
  PARTITION P1 VALUES LESS THAN (10) ENGINE = InnoDB)
-
 -- 使用DATE类型的字段作为分区键
 CREATE TABLE members (
     username VARCHAR(16) NOT NULL,
@@ -127,7 +126,6 @@ PARTITION BY RANGE COLUMNS(joined) (
     PARTITION p0 VALUES LESS THAN ('1960-01-01'),
     PARTITION p1 VALUES LESS THAN MAXVALUE
 );
-
 -- 使用UNIX_TIMESTAMP函数进行分区
 CREATE TABLE quarterly_report_status (
     report_id INT NOT NULL,
@@ -137,7 +135,6 @@ PARTITION BY RANGE ( UNIX_TIMESTAMP(report_updated) ) (
     PARTITION p0 VALUES LESS THAN ( UNIX_TIMESTAMP('2008-01-01 00:00:00') ),
     PARTITION p1 VALUES LESS THAN (MAXVALUE)
 );
-
 -- 使用YEAR等函数进行分区
 CREATE TABLE employees (
     id INT NOT NULL,
@@ -170,9 +167,6 @@ PARTITION BY RANGE ( YEAR(separated) ) (
 - 对于不支持事务的存储引擎，在包含未匹配值的之前的记录会被插入，自己及其之后的不会。
 
 可以使用`IGNORE`关键字忽略此类错误，如此一来，包含未匹配的值的记录不会插入，其余的都会被插入到数据库并且不会发出错误。
-
-!!!note
-`ob 插入LIST无匹配的值 报错: Table has no partition for value`
 
 ```sql
 MariaDB [MYISAM_TEST]> CREATE TABLE IF NOT EXISTS list_test (ID INT) MAX_ROWS=8 
@@ -234,8 +228,8 @@ value_list:
 mysql> CREATE TABLE rcx (
     ->     a INT,
     ->     b INT,
-    ->     c CHAR(3),
-    ->     d INT
+    ->     c CHAR(3)
+    ->     d INT,
     -> )
     -> PARTITION BY RANGE COLUMNS(a,d,c) (
     ->     PARTITION p0 VALUES LESS THAN (5,10,'ggg'),

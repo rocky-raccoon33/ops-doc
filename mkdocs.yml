@@ -1,6 +1,6 @@
 site_name: ops docs
 theme:
-  name: windmill
+  name: material
 markdown_extensions:
   - pymdownx.superfences
   - pymdownx.highlight

@@ -3,7 +3,7 @@
 
 分区将一张表分为几个分区进行存储`[物理分区]`，本质上还是一张表。分区键用于根据某个区间值`[RANGE]`、特定值列表`[LIST]`或hash函数值`[HASH]`执行数据的聚集，让数据更具分布规则分布在不同的分区中，让一个大对象变成一些小对象。
 
-分区的优点：
+**`分区的优点：`**
 
 - 可以在一个表中存储比在单个磁盘或文件系统分区上能保存的更多的数据
 
@@ -82,7 +82,7 @@ subpartition_definition:
 SELECT * FROM INFORMATION_SCHEMA.PARTITIONS WHERE TABLE_NAME = 'table_name';
 ```
 
-使用`EXPLAIN PARTITIONS select_statement`查看使用了哪些分区
+使用`EXPLAIN select_statement`查看使用了哪些分区
 
 ## 删除分区
 
@@ -495,6 +495,24 @@ CREATE TABLE ts (id INT, purchased DATE)
 #### HASH and KEY partitioning
 
 NULL值被视为**零**。
+
+## 分区裁剪 `OB同`
+
+查询时带上`分区KEY` mysql仅会查询相关的分区数据
+
+```sql
+mysql> create table range_t
+(int a NOT NULL,int b NOT NULL) partition by range (a)
+ (partition p1 values less than (100),
+ partition p2 values less than maxvalue);
+mysql> explain select * from range_t where a < 10;
++----+-------------+---------+------------+------+---------------+------+---------+------+------+----------+-------------+
+| id | select_type | table   | partitions | type | possible_keys | key  | key_len | ref  | rows | filtered | Extra       |
++----+-------------+---------+------------+------+---------------+------+---------+------+------+----------+-------------+
+|  1 | SIMPLE      | range_t | p1         | ALL  | NULL          | NULL | NULL    | NULL |    1 |   100.00 | Using where |
++----+-------------+---------+------------+------+---------------+------+---------+------+------+----------+-------------+
+1 row in set, 1 warning (0.00 sec)
+```
 
 ## 分区管理
 

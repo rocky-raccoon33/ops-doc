@@ -1,13 +1,13 @@
 site_name: ops docs
 theme:
-  name: material
-markdown_extensions:
-  - pymdownx.superfences
-  - pymdownx.highlight
-  - pymdownx.keys
-  - pymdownx.mark
-  - pymdownx.tabbed
-  - admonition
-  - footnotes
-  - toc:
-      permalink: true
+  name: windmill
+# markdown_extensions:
+#   - pymdownx.superfences
+#   - pymdownx.highlight
+#   - pymdownx.keys
+#   - pymdownx.mark
+#   - pymdownx.tabbed
+#   - admonition
+#   - footnotes
+#   - toc:
+#       permalink: true

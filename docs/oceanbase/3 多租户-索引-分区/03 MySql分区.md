@@ -13,6 +13,8 @@
 
 - 跨多个磁盘分散数据查询，获得更大的吞吐量
 
+---
+
 ## 分区表的创建
 
 ```sql
@@ -66,9 +68,11 @@ subpartition_definition:
 
 指定表的分区数`PARTITIONS num`时，必须将其表示为不带前导零的非零正整数
 
-分区表上没有主键/唯一键 `或者` 使用主键/唯一键都必须包含分区键 **`ob无唯一键限制`**
+分区表上没有主键/唯一键 `或者` 每个`[mysql]`**唯一键** | `[OB]`**主键** 都必须包含所有分区键
 
 **分区的名字不区分大小写**
+
+---
 
 ## 查看分区
 
@@ -84,13 +88,18 @@ SELECT * FROM INFORMATION_SCHEMA.PARTITIONS WHERE TABLE_NAME = 'table_name';
 
 使用`EXPLAIN select_statement`查看使用了哪些分区
 
+---
+
 ## 删除分区
 
-和删除表一样，使用 `TRUNCATE`/`DROP` 清空分区（比`DELETE`要快），
+和删除表一样，使用 `TRUNCATE`/`DROP` 清空分区（比`DELETE`要快）
 
 ```sql
+-- DROP PARTITION can only be used on RANGE/LIST partitions
 ALTER TABLE table_name TRUNCATE/DROP PARTITION partition_name;
 ```
+
+---
 
 ## 分区类型
 
@@ -115,7 +124,6 @@ CREATE TABLE `range_test` (
 ) PARTITION BY RANGE (ID)
 (PARTITION P0 VALUES LESS THAN (5) ENGINE = InnoDB,
  PARTITION P1 VALUES LESS THAN (10) ENGINE = InnoDB)
-
 -- 使用DATE类型的字段作为分区键
 CREATE TABLE members (
     username VARCHAR(16) NOT NULL,
@@ -126,7 +134,6 @@ PARTITION BY RANGE COLUMNS(joined) (
     PARTITION p0 VALUES LESS THAN ('1960-01-01'),
     PARTITION p1 VALUES LESS THAN MAXVALUE
 );
-
 -- 使用UNIX_TIMESTAMP函数进行分区
 CREATE TABLE quarterly_report_status (
     report_id INT NOT NULL,
@@ -136,7 +143,6 @@ PARTITION BY RANGE ( UNIX_TIMESTAMP(report_updated) ) (
     PARTITION p0 VALUES LESS THAN ( UNIX_TIMESTAMP('2008-01-01 00:00:00') ),
     PARTITION p1 VALUES LESS THAN (MAXVALUE)
 );
-
 -- 使用YEAR等函数进行分区
 CREATE TABLE employees (
     id INT NOT NULL,
@@ -169,9 +175,6 @@ PARTITION BY RANGE ( YEAR(separated) ) (
 - 对于不支持事务的存储引擎，在包含未匹配值的之前的记录会被插入，自己及其之后的不会。
 
 可以使用`IGNORE`关键字忽略此类错误，如此一来，包含未匹配的值的记录不会插入，其余的都会被插入到数据库并且不会发出错误。
-
-!!!note
-`ob 插入LIST无匹配的值 报错: Table has no partition for value`
 
 ```sql
 MariaDB [MYISAM_TEST]> CREATE TABLE IF NOT EXISTS list_test (ID INT) MAX_ROWS=8 
@@ -209,10 +212,9 @@ MariaDB [MYISAM_TEST]> SELECT * FROM list_test;
 
 相比于 RANGE 分区，`RANGE COLUMNS` 分区:
 
-- 不接受表达式，只接受字段名。
-- 接受一个或多个字段组合的列表。
-- 划分基于元组之间的比较
-- 不受限于整数类型。其它类型也可以用作分区字段。
+- 只接受一个或多个字段组合的列表。
+- 划分`基于元组`之间的比较
+- 不受限于整数类型 其它类型也可以用作分区字段。
 
 ```sql
 CREATE TABLE table_name
@@ -233,8 +235,8 @@ value_list:
 mysql> CREATE TABLE rcx (
     ->     a INT,
     ->     b INT,
-    ->     c CHAR(3),
-    ->     d INT
+    ->     c CHAR(3)
+    ->     d INT,
     -> )
     -> PARTITION BY RANGE COLUMNS(a,d,c) (
     ->     PARTITION p0 VALUES LESS THAN (5,10,'ggg'),
@@ -361,7 +363,7 @@ PARTITIONS 4;
 
 常规HASH分区让每个分区管理的数据都减少了，提高了查询效率；但是在分区管理上的代价太大，故提供了线性分区*LINEAR HASH Partitioning*来解决这个问题。
 
-#### LINEAR HASH 分区 `OB不支持`
+#### LINEAR HASH 分区 <span style="color:red"> **mysql** </span>
 
 线性散列利用线性二次幂算法，而常规散列使用散列函数值的模数。
 
@@ -427,7 +429,7 @@ PARTITIONS num;
 
 注意：不能执行`ALTER TABLE DROP PRIMARY KEY`删除key类型的分区，但是NDB Cluster可以。
 
-#### LINEAR KEY 分区`OB不支持`
+#### LINEAR KEY 分区 <span style="color:red"> **mysql** </span>
 
 与线性HASH分区类似。
 
@@ -478,7 +480,7 @@ CREATE TABLE ts (id INT, purchased DATE)
 - 不允许只对一部分分区定义子分区
 - 在整个表中每个子分区的名称必须是唯一的
 
-### MySQL分区如何处理NULL **`OB同`**
+### MySQL分区如何处理NULL
 
 !!! note
  `NULL`不是一个数字。
@@ -496,7 +498,9 @@ CREATE TABLE ts (id INT, purchased DATE)
 
 NULL值被视为**零**。
 
-## 分区裁剪 `OB同`
+---
+
+## 分区裁剪
 
 查询时带上`分区KEY` mysql仅会查询相关的分区数据
 
@@ -514,6 +518,8 @@ mysql> explain select * from range_t where a < 10;
 1 row in set, 1 warning (0.00 sec)
 ```
 
+---
+
 ## 分区管理
 
 动作：添加、删除、重组（合并、分离）。使用`ALTER TABLE`语句带有的*partition_options* 子句执行，与创建分区的语法相同。这些动作会涉及到数据的迁移。
@@ -527,11 +533,6 @@ mysql> explain select * from range_t where a < 10;
 
 ```sql
 ALTER TABLE ... DROP PARTITION ...
-```
-
-```sql
-mysql> ALTER TABLE tr DROP PARTITION p2;
-Query OK, 0 rows affected (0.03 sec)
 ```
 
  分区中的数据同时也被删除。`NDBCLUSTER`存储引擎不支持该操作。
@@ -549,7 +550,7 @@ ALTER TABLE members ADD PARTITION (PARTITION p3 VALUES LESS THAN (2010));
 ALTER TABLE tt ADD PARTITION (PARTITION p2 VALUES IN (7, 14, 21), PARTITION p3 VALUES IN (1));
 ```
 
-LIST分区不能包含**重复的值**。
+LIST分区不能包含重复的值
 
 #### 重组
 
@@ -587,7 +588,7 @@ ALTER TABLE members REORGANIZE PARTITION p0,p1,p2,p3 INTO (
 ```
 
 !!! warning
- RANGE分区不能跨范围重组。例如：不能重组‘p0,p2’，而跳过p1。
+ RANGE分区`不能跨范围重组`。例如：不能重组‘p0,p2’，而跳过p1。
  不能使用重组语句改变分区类型，以及改变分区键*expr*；使用`ALTER TABLE ... PARTITION BY ...`达到这个目的。
 
 ### HASH and KEY 的管理
@@ -686,6 +687,8 @@ ALTER TABLE hash_par TRUNCATE PARTITION ALL;
 
 `ANALYZE`, `CHECK`, `OPTIMIZE`, `REBUILD`, `REPAIR`, and `TRUNCATE`操作不支持子分区。
 
+---
+
 ## 分区限制
 
 - 划分表达式不允许的结构：
@@ -711,8 +714,7 @@ ALTER TABLE hash_par TRUNCATE PARTITION ALL;
 - InnoDB分区表不支持外键
 
 ```sql
--- mysql: Foreign keys are not yet supported in conjunction with partitioning
--- ob: 正常执行
+-- InnoDB: Foreign keys are not yet supported in conjunction with partitioning
 CREATE TABLE Persons(PersonID INT PRIMARY KEY)
 
 CREATE TABLE Orders (
@@ -750,7 +752,7 @@ CREATE TABLE Orders (
 
 三者的关系：分区表的分区表达式中使用的所有列必须是表可能具有的每个唯一键的一部分（主键被定义为唯一键）。换句话说：**表上的每个唯一键`mysql`必须使用表的分区表达式中的每一列。**如果表中没有唯一键则不受此约束。
 
-`ob分区只有主键限制`:每个主键必须包含所有分区键
+<span style="color:red"> **OB只有主键约束** </span>: 每个主键必须包含所有分区键
 
 例如下面这些是合法的：
 

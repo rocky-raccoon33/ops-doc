@@ -1,0 +1,2105 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.3.0, mkdocs-material-8.2.15">
+    
+    
+      
+        <title>03 MySql分区 - ops docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.c382b1dc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.cc9b2e1e.min.css">
+        
+      
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#_1" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="ops docs" class="md-header__button md-logo" aria-label="ops docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ops docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              03 MySql分区
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="ops docs" class="md-nav__button md-logo" aria-label="ops docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    ops docs
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        仅供ops内部交流
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          Oceanbase
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Oceanbase" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Oceanbase
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_1" type="checkbox" id="__nav_2_1" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2_1">
+          1 介绍
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="1 介绍" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_1">
+          <span class="md-nav__icon md-icon"></span>
+          1 介绍
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1%20%E4%BB%8B%E7%BB%8D/01%20%E6%A6%82%E8%BF%B0/" class="md-nav__link">
+        01 概述
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1%20%E4%BB%8B%E7%BB%8D/02%20Mysql%E5%85%BC%E5%AE%B9%E6%80%A7%E5%AF%B9%E6%AF%94/" class="md-nav__link">
+        02 Mysql兼容性对比
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_2" type="checkbox" id="__nav_2_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2_2">
+          2 架构
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="2 架构" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_2">
+          <span class="md-nav__icon md-icon"></span>
+          2 架构
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../2%20%E6%9E%B6%E6%9E%84/01%20%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/" class="md-nav__link">
+        01 整体架构
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_3" type="checkbox" id="__nav_2_3" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2_3">
+          3 多租户 索引 分区
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="3 多租户 索引 分区" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_3">
+          <span class="md-nav__icon md-icon"></span>
+          3 多租户 索引 分区
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01%20%E5%A4%9A%E7%A7%9F%E6%88%B7/" class="md-nav__link">
+        01 多租户
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../02%20%E7%B4%A2%E5%BC%95/" class="md-nav__link">
+        02 索引
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          03 MySql分区
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        03 MySql分区
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    概念
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    分区表的创建
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    查看分区
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    删除分区
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    分区类型
+  </a>
+  
+    <nav class="md-nav" aria-label="分区类型">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#range" class="md-nav__link">
+    RANGE 分区
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#list" class="md-nav__link">
+    LIST 分区
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#columns" class="md-nav__link">
+    COLUMNS 分区
+  </a>
+  
+    <nav class="md-nav" aria-label="COLUMNS 分区">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#range-columns" class="md-nav__link">
+    RANGE COLUMNS 分区
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#list-columns" class="md-nav__link">
+    LIST COLUMNS 分区
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hash" class="md-nav__link">
+    HASH 分区
+  </a>
+  
+    <nav class="md-nav" aria-label="HASH 分区">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#linear-hash-mysql" class="md-nav__link">
+    LINEAR HASH 分区  mysql 
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key" class="md-nav__link">
+    KEY 分区
+  </a>
+  
+    <nav class="md-nav" aria-label="KEY 分区">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#linear-key-mysql" class="md-nav__link">
+    LINEAR KEY 分区  mysql 
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    子分区
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mysqlnull" class="md-nav__link">
+    MySQL分区如何处理NULL
+  </a>
+  
+    <nav class="md-nav" aria-label="MySQL分区如何处理NULL">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#range-partitioning" class="md-nav__link">
+    RANGE partitioning
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#list-partitioning" class="md-nav__link">
+    LIST partitioning
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hash-and-key-partitioning" class="md-nav__link">
+    HASH and KEY partitioning
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    分区裁剪
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    分区管理
+  </a>
+  
+    <nav class="md-nav" aria-label="分区管理">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#range-and-list" class="md-nav__link">
+    RANGE and LIST 的管理
+  </a>
+  
+    <nav class="md-nav" aria-label="RANGE and LIST 的管理">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    删除
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    添加
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    重组
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hash-and-key" class="md-nav__link">
+    HASH and KEY 的管理
+  </a>
+  
+    <nav class="md-nav" aria-label="HASH and KEY 的管理">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    删除
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    添加
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    重组
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    分区的维护
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_16" class="md-nav__link">
+    分区限制
+  </a>
+  
+    <nav class="md-nav" aria-label="分区限制">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_17" class="md-nav__link">
+    分区键，主键，唯一键
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_18" class="md-nav__link">
+    与存储引擎相关的分区限制
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_19" class="md-nav__link">
+    与函数相关的分区限制
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_20" class="md-nav__link">
+    分区和表级锁定
+  </a>
+  
+    <nav class="md-nav" aria-label="分区和表级锁定">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dml" class="md-nav__link">
+    DML 语句
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddl" class="md-nav__link">
+    DDL 语句
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_21" class="md-nav__link">
+    其它语句
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../04%20QA/" class="md-nav__link">
+        04 QA
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_4" type="checkbox" id="__nav_2_4" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2_4">
+          4 数据库对象
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="4 数据库对象" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_4">
+          <span class="md-nav__icon md-icon"></span>
+          4 数据库对象
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../4%20%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AF%B9%E8%B1%A1/01%20%E5%88%86%E5%B8%83%E5%BC%8F%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AF%B9%E8%B1%A1/" class="md-nav__link">
+        01 分布式数据库对象
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_5" type="checkbox" id="__nav_2_5" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2_5">
+          5 事务管理
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="5 事务管理" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_5">
+          <span class="md-nav__icon md-icon"></span>
+          5 事务管理
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../5%20%E4%BA%8B%E5%8A%A1%E7%AE%A1%E7%90%86/01%20%E4%BA%8B%E5%8A%A1%E7%AE%A1%E7%90%86/" class="md-nav__link">
+        01 事务管理
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_6" type="checkbox" id="__nav_2_6" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2_6">
+          6 迁移问题
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="6 迁移问题" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_6">
+          <span class="md-nav__icon md-icon"></span>
+          6 迁移问题
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../6%20%E8%BF%81%E7%A7%BB%E9%97%AE%E9%A2%98/01%20%E8%BF%81%E7%A7%BB/" class="md-nav__link">
+        01 迁移
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          Prometheus
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Prometheus" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Prometheus
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../prometheus/00%20promethues/" class="md-nav__link">
+        00 promethues
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    概念
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    分区表的创建
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    查看分区
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    删除分区
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    分区类型
+  </a>
+  
+    <nav class="md-nav" aria-label="分区类型">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#range" class="md-nav__link">
+    RANGE 分区
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#list" class="md-nav__link">
+    LIST 分区
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#columns" class="md-nav__link">
+    COLUMNS 分区
+  </a>
+  
+    <nav class="md-nav" aria-label="COLUMNS 分区">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#range-columns" class="md-nav__link">
+    RANGE COLUMNS 分区
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#list-columns" class="md-nav__link">
+    LIST COLUMNS 分区
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hash" class="md-nav__link">
+    HASH 分区
+  </a>
+  
+    <nav class="md-nav" aria-label="HASH 分区">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#linear-hash-mysql" class="md-nav__link">
+    LINEAR HASH 分区  mysql 
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key" class="md-nav__link">
+    KEY 分区
+  </a>
+  
+    <nav class="md-nav" aria-label="KEY 分区">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#linear-key-mysql" class="md-nav__link">
+    LINEAR KEY 分区  mysql 
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    子分区
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mysqlnull" class="md-nav__link">
+    MySQL分区如何处理NULL
+  </a>
+  
+    <nav class="md-nav" aria-label="MySQL分区如何处理NULL">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#range-partitioning" class="md-nav__link">
+    RANGE partitioning
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#list-partitioning" class="md-nav__link">
+    LIST partitioning
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hash-and-key-partitioning" class="md-nav__link">
+    HASH and KEY partitioning
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    分区裁剪
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    分区管理
+  </a>
+  
+    <nav class="md-nav" aria-label="分区管理">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#range-and-list" class="md-nav__link">
+    RANGE and LIST 的管理
+  </a>
+  
+    <nav class="md-nav" aria-label="RANGE and LIST 的管理">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    删除
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    添加
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    重组
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hash-and-key" class="md-nav__link">
+    HASH and KEY 的管理
+  </a>
+  
+    <nav class="md-nav" aria-label="HASH and KEY 的管理">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    删除
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    添加
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    重组
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    分区的维护
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_16" class="md-nav__link">
+    分区限制
+  </a>
+  
+    <nav class="md-nav" aria-label="分区限制">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_17" class="md-nav__link">
+    分区键，主键，唯一键
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_18" class="md-nav__link">
+    与存储引擎相关的分区限制
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_19" class="md-nav__link">
+    与函数相关的分区限制
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_20" class="md-nav__link">
+    分区和表级锁定
+  </a>
+  
+    <nav class="md-nav" aria-label="分区和表级锁定">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dml" class="md-nav__link">
+    DML 语句
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddl" class="md-nav__link">
+    DDL 语句
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_21" class="md-nav__link">
+    其它语句
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+
+
+  <h1>03 MySql分区</h1>
+
+<h2 id="_1">概念<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>分区将一张表分为几个分区进行存储<code>[物理分区]</code>，本质上还是一张表。分区键用于根据某个区间值<code>[RANGE]</code>、特定值列表<code>[LIST]</code>或hash函数值<code>[HASH]</code>执行数据的聚集，让数据更具分布规则分布在不同的分区中，让一个大对象变成一些小对象。</p>
+<p><strong><code>分区的优点：</code></strong></p>
+<ul>
+<li>
+<p>可以在一个表中存储比在单个磁盘或文件系统分区上能保存的更多的数据</p>
+</li>
+<li>
+<p>可以轻松的移除或添加分区达到删除数据或新增存储数据的空间</p>
+</li>
+<li>
+<p>一些查询可以得到很好的优化 <code>举例: 指定分区查询</code></p>
+</li>
+<li>
+<p>跨多个磁盘分散数据查询，获得更大的吞吐量</p>
+</li>
+</ul>
+<hr />
+<h2 id="_2">分区表的创建<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="p">[</span><span class="k">TEMPORARY</span><span class="p">]</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="p">[</span><span class="k">IF</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">EXISTS</span><span class="p">]</span><span class="w"> </span><span class="n">tbl_name</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="n">create_definition</span><span class="p">,...)</span><span class="w"></span>
+<span class="w">    </span><span class="p">[</span><span class="n">table_options</span><span class="p">]</span><span class="w"></span>
+<span class="w">    </span><span class="p">[</span><span class="n">partition_options</span><span class="p">]</span><span class="w"></span>
+<span class="n">partition_options</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"></span>
+<span class="w">        </span><span class="err">{</span><span class="w"> </span><span class="p">[</span><span class="n">LINEAR</span><span class="p">]</span><span class="w"> </span><span class="n">HASH</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="p">[</span><span class="n">LINEAR</span><span class="p">]</span><span class="w"> </span><span class="k">KEY</span><span class="p">(</span><span class="n">column_list</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="n">RANGE</span><span class="err">{</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">COLUMNS</span><span class="p">(</span><span class="n">column_list</span><span class="p">)</span><span class="err">}</span><span class="w"></span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="n">LIST</span><span class="err">{</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">COLUMNS</span><span class="p">(</span><span class="n">column_list</span><span class="p">)</span><span class="err">}</span><span class="w"> </span><span class="err">}</span><span class="w"></span>
+<span class="w">    </span><span class="p">[</span><span class="n">PARTITIONS</span><span class="w"> </span><span class="n">num</span><span class="p">]</span><span class="w"></span>
+<span class="w">    </span><span class="p">[</span><span class="n">SUBPARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"></span>
+<span class="w">        </span><span class="err">{</span><span class="w"> </span><span class="p">[</span><span class="n">LINEAR</span><span class="p">]</span><span class="w"> </span><span class="n">HASH</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="p">[</span><span class="n">LINEAR</span><span class="p">]</span><span class="w"> </span><span class="k">KEY</span><span class="p">(</span><span class="n">column_list</span><span class="p">)</span><span class="w"> </span><span class="err">}</span><span class="w"></span>
+<span class="w">      </span><span class="p">[</span><span class="n">SUBPARTITIONS</span><span class="w"> </span><span class="n">num</span><span class="p">]</span><span class="w"></span>
+<span class="w">    </span><span class="p">]</span><span class="w"></span>
+<span class="w">    </span><span class="p">[(</span><span class="n">partition_definition</span><span class="w"> </span><span class="p">[,</span><span class="w"> </span><span class="n">partition_definition</span><span class="p">]</span><span class="w"> </span><span class="p">...)]</span><span class="w"></span>
+
+<span class="n">partition_definition</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">partition_name</span><span class="w"></span>
+<span class="w">        </span><span class="p">[</span><span class="k">VALUES</span><span class="w"></span>
+<span class="w">            </span><span class="err">{</span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="err">{</span><span class="p">(</span><span class="n">expr</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">value_list</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">MAXVALUE</span><span class="err">}</span><span class="w"></span>
+<span class="w">            </span><span class="o">|</span><span class="w"></span>
+<span class="w">            </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span><span class="n">value_list</span><span class="p">)</span><span class="err">}</span><span class="p">]</span><span class="w"></span>
+<span class="w">        </span><span class="p">[[</span><span class="k">STORAGE</span><span class="p">]</span><span class="w"> </span><span class="n">ENGINE</span><span class="w"> </span><span class="p">[</span><span class="o">=</span><span class="p">]</span><span class="w"> </span><span class="n">engine_name</span><span class="p">]</span><span class="w"></span>
+<span class="w">        </span><span class="p">[</span><span class="k">COMMENT</span><span class="w"> </span><span class="p">[</span><span class="o">=</span><span class="p">]</span><span class="w"> </span><span class="s1">&#39;comment_text&#39;</span><span class="w"> </span><span class="p">]</span><span class="w"></span>
+<span class="w">        </span><span class="p">[</span><span class="k">DATA</span><span class="w"> </span><span class="n">DIRECTORY</span><span class="w"> </span><span class="p">[</span><span class="o">=</span><span class="p">]</span><span class="w"> </span><span class="s1">&#39;data_dir&#39;</span><span class="p">]</span><span class="w"></span>
+<span class="w">        </span><span class="p">[</span><span class="k">INDEX</span><span class="w"> </span><span class="n">DIRECTORY</span><span class="w"> </span><span class="p">[</span><span class="o">=</span><span class="p">]</span><span class="w"> </span><span class="s1">&#39;index_dir&#39;</span><span class="p">]</span><span class="w"></span>
+<span class="w">        </span><span class="p">[</span><span class="n">MAX_ROWS</span><span class="w"> </span><span class="p">[</span><span class="o">=</span><span class="p">]</span><span class="w"> </span><span class="n">max_number_of_rows</span><span class="p">]</span><span class="w"></span>
+<span class="w">        </span><span class="p">[</span><span class="n">MIN_ROWS</span><span class="w"> </span><span class="p">[</span><span class="o">=</span><span class="p">]</span><span class="w"> </span><span class="n">min_number_of_rows</span><span class="p">]</span><span class="w"></span>
+<span class="w">        </span><span class="p">[</span><span class="n">TABLESPACE</span><span class="w"> </span><span class="p">[</span><span class="o">=</span><span class="p">]</span><span class="w"> </span><span class="n">tablespace_name</span><span class="p">]</span><span class="w"></span>
+<span class="w">        </span><span class="p">[</span><span class="n">NODEGROUP</span><span class="w"> </span><span class="p">[</span><span class="o">=</span><span class="p">]</span><span class="w"> </span><span class="n">node_group_id</span><span class="p">]</span><span class="w"></span>
+<span class="w">        </span><span class="p">[(</span><span class="n">subpartition_definition</span><span class="w"> </span><span class="p">[,</span><span class="w"> </span><span class="n">subpartition_definition</span><span class="p">]</span><span class="w"> </span><span class="p">...)]</span><span class="w"></span>
+<span class="n">subpartition_definition</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="n">SUBPARTITION</span><span class="w"> </span><span class="n">logical_name</span><span class="w"></span>
+<span class="w">        </span><span class="p">[[</span><span class="k">STORAGE</span><span class="p">]</span><span class="w"> </span><span class="n">ENGINE</span><span class="w"> </span><span class="p">[</span><span class="o">=</span><span class="p">]</span><span class="w"> </span><span class="n">engine_name</span><span class="p">]</span><span class="w"></span>
+<span class="w">        </span><span class="p">[</span><span class="k">COMMENT</span><span class="w"> </span><span class="p">[</span><span class="o">=</span><span class="p">]</span><span class="w"> </span><span class="s1">&#39;comment_text&#39;</span><span class="w"> </span><span class="p">]</span><span class="w"></span>
+<span class="w">        </span><span class="p">[</span><span class="k">DATA</span><span class="w"> </span><span class="n">DIRECTORY</span><span class="w"> </span><span class="p">[</span><span class="o">=</span><span class="p">]</span><span class="w"> </span><span class="s1">&#39;data_dir&#39;</span><span class="p">]</span><span class="w"></span>
+<span class="w">        </span><span class="p">[</span><span class="k">INDEX</span><span class="w"> </span><span class="n">DIRECTORY</span><span class="w"> </span><span class="p">[</span><span class="o">=</span><span class="p">]</span><span class="w"> </span><span class="s1">&#39;index_dir&#39;</span><span class="p">]</span><span class="w"></span>
+<span class="w">        </span><span class="p">[</span><span class="n">MAX_ROWS</span><span class="w"> </span><span class="p">[</span><span class="o">=</span><span class="p">]</span><span class="w"> </span><span class="n">max_number_of_rows</span><span class="p">]</span><span class="w"></span>
+<span class="w">        </span><span class="p">[</span><span class="n">MIN_ROWS</span><span class="w"> </span><span class="p">[</span><span class="o">=</span><span class="p">]</span><span class="w"> </span><span class="n">min_number_of_rows</span><span class="p">]</span><span class="w"></span>
+<span class="w">        </span><span class="p">[</span><span class="n">TABLESPACE</span><span class="w"> </span><span class="p">[</span><span class="o">=</span><span class="p">]</span><span class="w"> </span><span class="n">tablespace_name</span><span class="p">]</span><span class="w"></span>
+<span class="w">        </span><span class="p">[</span><span class="n">NODEGROUP</span><span class="w"> </span><span class="p">[</span><span class="o">=</span><span class="p">]</span><span class="w"> </span><span class="n">node_group_id</span><span class="p">]</span><span class="w"></span>
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+</div>
+<p>分区选项一定要放在最后</p>
+<p>指定表的分区数<code>PARTITIONS num</code>时，必须将其表示为不带前导零的非零正整数</p>
+<p>分区表上没有主键/唯一键 <code>或者</code> 每个<code>[mysql]</code><strong>唯一键</strong> | <code>[OB]</code><strong>主键</strong> 都必须包含所有分区键</p>
+<p><strong>分区的名字不区分大小写</strong></p>
+<hr />
+<h2 id="_3">查看分区<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p>使用<code>SHOW CREATE TABLE</code>查看分区表的分区子句。</p>
+<p>使用<code>SHOW TABLE STATUS</code>确认是否是分区表。</p>
+<p>查询<code>INFORMATION_SCHEMA.PARTITIONS</code>表：</p>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">INFORMATION_SCHEMA</span><span class="p">.</span><span class="n">PARTITIONS</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="k">TABLE_NAME</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;table_name&#39;</span><span class="p">;</span><span class="w"></span>
+</code></pre></div>
+<p>使用<code>EXPLAIN select_statement</code>查看使用了哪些分区</p>
+<hr />
+<h2 id="_4">删除分区<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>和删除表一样，使用 <code>TRUNCATE</code>/<code>DROP</code> 清空分区（比<code>DELETE</code>要快）</p>
+<div class="highlight"><pre><span></span><code><span class="c1">-- DROP PARTITION can only be used on RANGE/LIST partitions</span>
+<span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">table_name</span><span class="w"> </span><span class="k">TRUNCATE</span><span class="o">/</span><span class="k">DROP</span><span class="w"> </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">partition_name</span><span class="p">;</span><span class="w"></span>
+</code></pre></div>
+<hr />
+<h2 id="_5">分区类型<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<p>通过<code>KEY</code> <code>RANGE COLUMNS</code> <code>LIST COLUMNS</code>分区时，可以使用<code>DATE</code> <code>TIME</code> <code>DATETIME</code>类型的字段作为分区字段。</p>
+<p>其它的分区类型在要求一个返回整型数值或NULL的分区表达式</p>
+<h3 id="range">RANGE 分区<a class="headerlink" href="#range" title="Permanent link">&para;</a></h3>
+<p>按范围分区的表的分区方式是：每个分区包含分区表达式值位于给定范围内的行。</p>
+<p>范围应该是<strong>连续但不重叠的</strong>，并且使用<code>VALUES LESS THAN</code>运算符定义。</p>
+<ul>
+<li>NULL会被当作最小值来处理</li>
+<li>支持使用<code>DATE,DATETIME</code>类型的字段作为分区键</li>
+<li>支持使用<code>UNIX_TIMESTAMP,YEAR</code>等函数进行分区</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="c1">-- 使用整型的字段作为分区键</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="o">`</span><span class="n">range_test</span><span class="o">`</span><span class="w"> </span><span class="p">(</span><span class="w"></span>
+<span class="w">  </span><span class="o">`</span><span class="n">ID</span><span class="o">`</span><span class="w"> </span><span class="nb">int</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="k">NULL</span><span class="w"></span>
+<span class="p">)</span><span class="w"> </span><span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">RANGE</span><span class="w"> </span><span class="p">(</span><span class="n">ID</span><span class="p">)</span><span class="w"></span>
+<span class="p">(</span><span class="n">PARTITION</span><span class="w"> </span><span class="n">P0</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="w"> </span><span class="n">ENGINE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">InnoDB</span><span class="p">,</span><span class="w"></span>
+<span class="w"> </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">P1</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="w"> </span><span class="n">ENGINE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">InnoDB</span><span class="p">)</span><span class="w"></span>
+<span class="c1">-- 使用DATE类型的字段作为分区键</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">members</span><span class="w"> </span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="n">username</span><span class="w"> </span><span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">email</span><span class="w"> </span><span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">35</span><span class="p">),</span><span class="w"></span>
+<span class="w">    </span><span class="n">joined</span><span class="w"> </span><span class="nb">DATE</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"></span>
+<span class="p">)</span><span class="w"></span>
+<span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">RANGE</span><span class="w"> </span><span class="n">COLUMNS</span><span class="p">(</span><span class="n">joined</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p0</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;1960-01-01&#39;</span><span class="p">),</span><span class="w"></span>
+<span class="w">    </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p1</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="k">MAXVALUE</span><span class="w"></span>
+<span class="p">);</span><span class="w"></span>
+<span class="c1">-- 使用UNIX_TIMESTAMP函数进行分区</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">quarterly_report_status</span><span class="w"> </span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="n">report_id</span><span class="w"> </span><span class="nb">INT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">report_updated</span><span class="w"> </span><span class="k">TIMESTAMP</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="k">CURRENT_TIMESTAMP</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="k">UPDATE</span><span class="w"> </span><span class="k">CURRENT_TIMESTAMP</span><span class="w"></span>
+<span class="p">)</span><span class="w"></span>
+<span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">RANGE</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="n">UNIX_TIMESTAMP</span><span class="p">(</span><span class="n">report_updated</span><span class="p">)</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p0</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="n">UNIX_TIMESTAMP</span><span class="p">(</span><span class="s1">&#39;2008-01-01 00:00:00&#39;</span><span class="p">)</span><span class="w"> </span><span class="p">),</span><span class="w"></span>
+<span class="w">    </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p1</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="p">(</span><span class="k">MAXVALUE</span><span class="p">)</span><span class="w"></span>
+<span class="p">);</span><span class="w"></span>
+<span class="c1">-- 使用YEAR等函数进行分区</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">employees</span><span class="w"> </span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="n">id</span><span class="w"> </span><span class="nb">INT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">separated</span><span class="w"> </span><span class="nb">DATE</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="s1">&#39;9999-12-31&#39;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">store_id</span><span class="w"> </span><span class="nb">INT</span><span class="w"></span>
+<span class="p">)</span><span class="w"></span>
+<span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">RANGE</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="k">YEAR</span><span class="p">(</span><span class="n">separated</span><span class="p">)</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p0</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="p">(</span><span class="mi">1991</span><span class="p">),</span><span class="w"></span>
+<span class="w">    </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p1</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="k">MAXVALUE</span><span class="w"></span>
+<span class="p">);</span><span class="w"></span>
+</code></pre></div>
+<p><code>RANGE</code>分区类型特别适合以下几种情况：</p>
+<ul>
+<li>需要删除旧数据时。可以很轻松地通过删除分区来删除旧数据 <code>ALTER TABLE employees DROP PARTITION p0;</code></li>
+<li>使用包含日期或时间值的列，或包含来自其他一些系列的值</li>
+<li>经常运行包含分区键的查询</li>
+</ul>
+<h3 id="list">LIST 分区<a class="headerlink" href="#list" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p>建立离散的值列表告诉数据库特定的值属于哪个分区。</p>
+</li>
+<li>
+<p>从属于一个<strong>枚举列表</strong>的值的集合，<code>RANGE分区</code>是从属于一个连续区间值的集合。</p>
+</li>
+<li>
+<p>没有类似于<em>MAXVALUE</em>的值来匹配所有的情况；<strong>所有被期望的值</strong>都应该被包含进<code>PARTITION ... VALUES IN (...)</code>子句。</p>
+</li>
+</ul>
+<p>使用单个INSERT语句插入多行时，行为取决于表是否使用事务存储引擎：</p>
+<ul>
+<li>对于支持事务的存储引擎，整个插入语句会被当做一个单一的事务。</li>
+<li>对于不支持事务的存储引擎，在包含未匹配值的之前的记录会被插入，自己及其之后的不会。</li>
+</ul>
+<p>可以使用<code>IGNORE</code>关键字忽略此类错误，如此一来，包含未匹配的值的记录不会插入，其余的都会被插入到数据库并且不会发出错误。</p>
+<div class="highlight"><pre><span></span><code><span class="n">MariaDB</span><span class="w"> </span><span class="p">[</span><span class="n">MYISAM_TEST</span><span class="p">]</span><span class="o">&gt;</span><span class="w"> </span><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="n">list_test</span><span class="w"> </span><span class="p">(</span><span class="n">ID</span><span class="w"> </span><span class="nb">INT</span><span class="p">)</span><span class="w"> </span><span class="n">MAX_ROWS</span><span class="o">=</span><span class="mi">8</span><span class="w"> </span>
+<span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">LIST</span><span class="w"> </span><span class="p">(</span><span class="n">ID</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">P0</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span><span class="w"></span>
+<span class="w">    </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">P1</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">8</span><span class="p">)</span><span class="w"></span>
+<span class="p">);</span><span class="w"></span>
+<span class="n">MariaDB</span><span class="w"> </span><span class="p">[</span><span class="n">MYISAM_TEST</span><span class="p">]</span><span class="o">&gt;</span><span class="w"> </span><span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">list_test</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="p">),(</span><span class="mi">3</span><span class="p">),(</span><span class="mi">9</span><span class="p">);</span><span class="w"></span>
+<span class="n">ERROR</span><span class="w"> </span><span class="mi">1526</span><span class="w"> </span><span class="p">(</span><span class="n">HY000</span><span class="p">):</span><span class="w"> </span><span class="k">Table</span><span class="w"> </span><span class="n">has</span><span class="w"> </span><span class="k">no</span><span class="w"> </span><span class="n">partition</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="mi">9</span><span class="w"></span>
+<span class="n">MariaDB</span><span class="w"> </span><span class="p">[</span><span class="n">MYISAM_TEST</span><span class="p">]</span><span class="o">&gt;</span><span class="w"> </span><span class="k">INSERT</span><span class="w"> </span><span class="k">IGNORE</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">list_test</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="p">),(</span><span class="mi">3</span><span class="p">),(</span><span class="mi">9</span><span class="p">);</span><span class="w"></span>
+<span class="n">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="n">affected</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">warning</span><span class="w"> </span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">00</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span><span class="w"></span>
+<span class="n">Records</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="w">  </span><span class="n">Duplicates</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w">  </span><span class="n">Warnings</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="n">MariaDB</span><span class="w"> </span><span class="p">[</span><span class="n">MYISAM_TEST</span><span class="p">]</span><span class="o">&gt;</span><span class="w"> </span><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">list_test</span><span class="p">;</span><span class="w"></span>
+<span class="o">+</span><span class="c1">------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">ID</span><span class="w">   </span><span class="o">|</span><span class="w"></span>
+<span class="o">+</span><span class="c1">------+</span>
+<span class="o">|</span><span class="w">    </span><span class="mi">1</span><span class="w"> </span><span class="o">|</span><span class="w"></span>
+<span class="o">|</span><span class="w">    </span><span class="mi">3</span><span class="w"> </span><span class="o">|</span><span class="w"></span>
+<span class="o">+</span><span class="c1">------+</span>
+</code></pre></div>
+<h3 id="columns">COLUMNS 分区<a class="headerlink" href="#columns" title="Permanent link">&para;</a></h3>
+<p>列分区是<code>RANGE</code>和<code>LIST</code>分区的变种。COLUMNS分区允许在分区键中<code>使用多个列</code>。</p>
+<p><code>RANGE COLUMNS</code> 分区和<code>LIST COLUMNS</code> 分区都支持非整型（non-integer）字段作为值的范围或列的成员，以下是运行的数据类型：</p>
+<ul>
+<li>所有的整数类型：<code>TINYINT, SMALLINT, MEDIUMINT, INT (INTEGER), BIGINT</code></li>
+<li>部分时间类型：<code>DATE 和 DATETIME</code></li>
+<li>部分字符串类型：<code>CHAR, VARCHAR, BINARY,  VARBINARY</code></li>
+</ul>
+<h4 id="range-columns">RANGE COLUMNS 分区<a class="headerlink" href="#range-columns" title="Permanent link">&para;</a></h4>
+<p>这种分区类型可以使用整数类型以外的类型列来定义范围。</p>
+<p>相比于 RANGE 分区，<code>RANGE COLUMNS</code> 分区:</p>
+<ul>
+<li>只接受一个或多个字段组合的列表。</li>
+<li>划分<code>基于元组</code>之间的比较</li>
+<li>不受限于整数类型 其它类型也可以用作分区字段。</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">table_name</span><span class="w"></span>
+<span class="n">PARTITIONED</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">RANGE</span><span class="w"> </span><span class="n">COLUMNS</span><span class="p">(</span><span class="n">column_list</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">partition_name</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="p">(</span><span class="n">value_list</span><span class="p">)[,</span><span class="w"></span>
+<span class="w">    </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">partition_name</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="p">(</span><span class="n">value_list</span><span class="p">)][,</span><span class="w"></span>
+<span class="w">    </span><span class="p">...]</span><span class="w"></span>
+<span class="p">);</span><span class="w"></span>
+<span class="n">column_list</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="k">column_name</span><span class="p">[,</span><span class="w"> </span><span class="k">column_name</span><span class="p">][,</span><span class="w"> </span><span class="p">...]</span><span class="w"></span>
+<span class="n">value_list</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="n">value</span><span class="p">[,</span><span class="w"> </span><span class="n">value</span><span class="p">][,</span><span class="w"> </span><span class="p">...]</span><span class="w"></span>
+</code></pre></div>
+<p><strong><code>举例</code></strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">rcx</span><span class="w"> </span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="o">-&gt;</span><span class="w">     </span><span class="n">a</span><span class="w"> </span><span class="nb">INT</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="o">-&gt;</span><span class="w">     </span><span class="n">b</span><span class="w"> </span><span class="nb">INT</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="o">-&gt;</span><span class="w">     </span><span class="k">c</span><span class="w"> </span><span class="nb">CHAR</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="o">-&gt;</span><span class="w">     </span><span class="n">d</span><span class="w"> </span><span class="nb">INT</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">RANGE</span><span class="w"> </span><span class="n">COLUMNS</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">d</span><span class="p">,</span><span class="k">c</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="o">-&gt;</span><span class="w">     </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p0</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="s1">&#39;ggg&#39;</span><span class="p">),</span><span class="w"></span>
+<span class="w">    </span><span class="o">-&gt;</span><span class="w">     </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p1</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="s1">&#39;mmm&#39;</span><span class="p">),</span><span class="w"></span>
+<span class="w">    </span><span class="o">-&gt;</span><span class="w">     </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p2</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">30</span><span class="p">,</span><span class="s1">&#39;sss&#39;</span><span class="p">),</span><span class="w"></span>
+<span class="w">    </span><span class="o">-&gt;</span><span class="w">     </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p3</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="p">(</span><span class="k">MAXVALUE</span><span class="p">,</span><span class="k">MAXVALUE</span><span class="p">,</span><span class="k">MAXVALUE</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">);</span><span class="w"></span>
+<span class="n">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">15</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span><span class="w"></span>
+</code></pre></div>
+<p>分区的定义必须遵从递增的顺序，否则会报错：</p>
+<div class="highlight"><pre><span></span><code><span class="c1">-- 正确</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">rc4</span><span class="w"> </span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="n">a</span><span class="w"> </span><span class="nb">INT</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">b</span><span class="w"> </span><span class="nb">INT</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="k">c</span><span class="w"> </span><span class="nb">INT</span><span class="w"></span>
+<span class="p">)</span><span class="w"></span>
+<span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">RANGE</span><span class="w"> </span><span class="n">COLUMNS</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="k">c</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p0</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">25</span><span class="p">,</span><span class="mi">50</span><span class="p">),</span><span class="w"></span>
+<span class="w">    </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p1</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">100</span><span class="p">),</span><span class="w"></span>
+<span class="w">    </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p2</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">30</span><span class="p">,</span><span class="mi">50</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p3</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="p">(</span><span class="k">MAXVALUE</span><span class="p">,</span><span class="k">MAXVALUE</span><span class="p">,</span><span class="k">MAXVALUE</span><span class="p">)</span><span class="w"></span>
+<span class="w"> </span><span class="p">);</span><span class="w"></span>
+<span class="c1">-- 错误</span>
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">rcf</span><span class="w"> </span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="o">-&gt;</span><span class="w">     </span><span class="n">a</span><span class="w"> </span><span class="nb">INT</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="o">-&gt;</span><span class="w">     </span><span class="n">b</span><span class="w"> </span><span class="nb">INT</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="o">-&gt;</span><span class="w">     </span><span class="k">c</span><span class="w"> </span><span class="nb">INT</span><span class="w"></span>
+<span class="w">    </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">RANGE</span><span class="w"> </span><span class="n">COLUMNS</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="k">c</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="o">-&gt;</span><span class="w">     </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p0</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">25</span><span class="p">,</span><span class="mi">50</span><span class="p">),</span><span class="w"></span>
+<span class="w">    </span><span class="o">-&gt;</span><span class="w">     </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p1</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">100</span><span class="p">),</span><span class="w"></span>
+<span class="w">    </span><span class="o">-&gt;</span><span class="w">     </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p2</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">30</span><span class="p">,</span><span class="mi">50</span><span class="p">),</span><span class="w"></span>
+<span class="w">    </span><span class="o">-&gt;</span><span class="w">     </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p3</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="p">(</span><span class="k">MAXVALUE</span><span class="p">,</span><span class="k">MAXVALUE</span><span class="p">,</span><span class="k">MAXVALUE</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="o">-&gt;</span><span class="w">  </span><span class="p">);</span><span class="w"></span>
+<span class="n">ERROR</span><span class="w"> </span><span class="mi">1493</span><span class="w"> </span><span class="p">(</span><span class="n">HY000</span><span class="p">):</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="n">must</span><span class="w"> </span><span class="n">be</span><span class="w"> </span><span class="n">strictly</span><span class="w"> </span><span class="n">increasing</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="k">each</span><span class="w"> </span><span class="n">partition</span><span class="w"></span>
+</code></pre></div>
+<p><strong><code>举例</code></strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">-- 创建分区表</span>
+<span class="n">MariaDB</span><span class="w"> </span><span class="p">[</span><span class="n">MYISAM_TEST</span><span class="p">]</span><span class="o">&gt;</span><span class="w"> </span><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">rc1</span><span class="w"> </span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="o">-&gt;</span><span class="w">     </span><span class="n">a</span><span class="w"> </span><span class="nb">INT</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="o">-&gt;</span><span class="w">     </span><span class="n">b</span><span class="w"> </span><span class="nb">INT</span><span class="w"></span>
+<span class="w">    </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">RANGE</span><span class="w"> </span><span class="n">COLUMNS</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="o">-&gt;</span><span class="w">     </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p0</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="mi">12</span><span class="p">),</span><span class="w"></span>
+<span class="w">    </span><span class="o">-&gt;</span><span class="w">     </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p3</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="p">(</span><span class="k">MAXVALUE</span><span class="p">,</span><span class="w"> </span><span class="k">MAXVALUE</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">);</span><span class="w"></span>
+
+<span class="c1">-- 插入数据</span>
+<span class="n">MariaDB</span><span class="w"> </span><span class="p">[</span><span class="n">MYISAM_TEST</span><span class="p">]</span><span class="o">&gt;</span><span class="w"> </span><span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">rc1</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">),</span><span class="w"> </span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">),</span><span class="w"> </span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="mi">12</span><span class="p">);</span><span class="w"></span>
+<span class="c1">-- 查看数据分布</span>
+<span class="n">MariaDB</span><span class="w"> </span><span class="p">[</span><span class="n">MYISAM_TEST</span><span class="p">]</span><span class="o">&gt;</span><span class="w"> </span><span class="k">SELECT</span><span class="w"> </span><span class="n">PARTITION_NAME</span><span class="p">,</span><span class="n">TABLE_ROWS</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">INFORMATION_SCHEMA</span><span class="p">.</span><span class="n">PARTITIONS</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="k">TABLE_NAME</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;rc1&#39;</span><span class="p">;</span><span class="w"></span>
+<span class="o">+</span><span class="c1">----------------+------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">PARTITION_NAME</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">TABLE_ROWS</span><span class="w"> </span><span class="o">|</span><span class="w"></span>
+<span class="o">+</span><span class="c1">----------------+------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">p0</span><span class="w">             </span><span class="o">|</span><span class="w">          </span><span class="mi">2</span><span class="w"> </span><span class="o">|</span><span class="w"></span>
+<span class="o">|</span><span class="w"> </span><span class="n">p3</span><span class="w">             </span><span class="o">|</span><span class="w">          </span><span class="mi">1</span><span class="w"> </span><span class="o">|</span><span class="w"></span>
+<span class="o">+</span><span class="c1">----------------+------------+</span>
+</code></pre></div>
+<p>多行分区对于分区键的比较是对元组进行比较，类似于这样：</p>
+<div class="highlight"><pre><span></span><code><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">SELECT</span><span class="w"> </span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">12</span><span class="p">),</span><span class="w"> </span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">11</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">12</span><span class="p">),</span><span class="w"> </span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">12</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">12</span><span class="p">);</span><span class="w"></span>
+<span class="o">+</span><span class="c1">-----------------+-----------------+-----------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">12</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">11</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">12</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">12</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">12</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"></span>
+<span class="o">+</span><span class="c1">-----------------+-----------------+-----------------+</span>
+<span class="o">|</span><span class="w">               </span><span class="mi">1</span><span class="w"> </span><span class="o">|</span><span class="w">               </span><span class="mi">1</span><span class="w"> </span><span class="o">|</span><span class="w">               </span><span class="mi">0</span><span class="w"> </span><span class="o">|</span><span class="w"></span>
+<span class="o">+</span><span class="c1">-----------------+-----------------+-----------------+</span>
+<span class="mi">1</span><span class="w"> </span><span class="k">row</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="k">set</span><span class="w"> </span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">00</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span><span class="w"></span>
+</code></pre></div>
+<h4 id="list-columns">LIST COLUMNS 分区<a class="headerlink" href="#list-columns" title="Permanent link">&para;</a></h4>
+<p>这种分区类型可以使用多个字段作为分区键，并使用整数类型以外的类型列来定义范围。</p>
+<p>与RANGE COLUMNS 类似，参考上文说明。</p>
+<p>多个字段作为分区键的写法：</p>
+<div class="highlight"><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">lc</span><span class="w"> </span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="n">a</span><span class="w"> </span><span class="nb">INT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">b</span><span class="w"> </span><span class="nb">INT</span><span class="w"> </span><span class="k">NULL</span><span class="w"></span>
+<span class="p">)</span><span class="w"></span>
+<span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">LIST</span><span class="w"> </span><span class="n">COLUMNS</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p0</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">IN</span><span class="p">(</span><span class="w"> </span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span><span class="w"> </span><span class="p">(</span><span class="k">NULL</span><span class="p">,</span><span class="k">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">),</span><span class="w"></span>
+<span class="w">    </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p1</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">IN</span><span class="p">(</span><span class="w"> </span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span><span class="w"> </span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="p">),</span><span class="w"></span>
+<span class="w">    </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p2</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">IN</span><span class="p">(</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span><span class="w"> </span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span><span class="w"> </span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span><span class="w"> </span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">),</span><span class="w"></span>
+<span class="w">    </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p3</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">IN</span><span class="p">(</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span><span class="w"> </span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span><span class="w"> </span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span><span class="w"> </span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span><span class="w"> </span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="p">)</span><span class="w"></span>
+<span class="p">);</span><span class="w"></span>
+</code></pre></div>
+<h3 id="hash">HASH 分区<a class="headerlink" href="#hash" title="Permanent link">&para;</a></h3>
+<p>通过<code>HASH</code>进行分区主要用于确保在预定分区数量之间均匀地分布数据。</p>
+<div class="highlight"><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">employees</span><span class="w"> </span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="p">...</span><span class="w"></span>
+<span class="p">)</span><span class="w"></span>
+<span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">HASH</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span><span class="w"></span>
+<span class="n">PARTITIONS</span><span class="w"> </span><span class="n">num</span><span class="p">;</span><span class="w"></span>
+</code></pre></div>
+<p>分区键<em>expr</em>是整型的字段或者是返回整型的表达式，同时需要指定分区数量<em>num</em>。</p>
+<div class="highlight"><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">employees</span><span class="w"> </span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="n">id</span><span class="w"> </span><span class="nb">INT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">hired</span><span class="w"> </span><span class="nb">DATE</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="s1">&#39;1970-01-01&#39;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">separated</span><span class="w"> </span><span class="nb">DATE</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="s1">&#39;9999-12-31&#39;</span><span class="p">,</span><span class="w"></span>
+<span class="p">)</span><span class="w"></span>
+<span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">HASH</span><span class="p">(</span><span class="w"> </span><span class="k">YEAR</span><span class="p">(</span><span class="n">hired</span><span class="p">)</span><span class="w"> </span><span class="p">)</span><span class="w"></span>
+<span class="n">PARTITIONS</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span><span class="w"></span>
+</code></pre></div>
+<p><em>expr</em> 必须返回非常量非随机数的<code>整型值</code>。非常复杂的表达式可能会导致性能问题。也就是说，表达式越接近它所基于的列的值，MySQL就越有效地使用表达式进行散列分区。通过<strong>取模运算</strong>计算存储的分区号：<em>N</em> = MOD(<em>expr</em>, <em>num</em>)。</p>
+<p>常规HASH分区让每个分区管理的数据都减少了，提高了查询效率；但是在分区管理上的代价太大，故提供了线性分区<em>LINEAR HASH Partitioning</em>来解决这个问题。</p>
+<h4 id="linear-hash-mysql">LINEAR HASH 分区 <span style="color:red"> <strong>mysql</strong> </span><a class="headerlink" href="#linear-hash-mysql" title="Permanent link">&para;</a></h4>
+<p>线性散列利用线性二次幂算法，而常规散列使用散列函数值的模数。</p>
+<div class="highlight"><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">employees</span><span class="w"> </span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="p">...</span><span class="w"></span>
+<span class="p">)</span><span class="w"></span>
+<span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">LINEAR</span><span class="w"> </span><span class="n">HASH</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span><span class="w"></span>
+<span class="n">PARTITIONS</span><span class="w"> </span><span class="n">num</span><span class="p">;</span><span class="w"></span>
+</code></pre></div>
+<p>分区号<em>N</em>通过以下算法计算：</p>
+<ol>
+<li>找到下一个大于等于<em>num</em>的2的幂<em>V</em></li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">POWER</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">CEILING</span><span class="p">(</span><span class="n">LOG</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">num</span><span class="p">)))</span><span class="w"></span>
+</code></pre></div>
+<ol>
+<li>设置 <em>N = expr &amp; (V - 1)</em></li>
+<li>While <em>N</em> &gt;= <em>num</em>:<ul>
+<li>Set <em>V</em> = <em>V</em> / 2</li>
+<li>Set <em>N</em> = <em>N</em> &amp; (<em>V</em> - 1)</li>
+</ul>
+</li>
+</ol>
+<p><strong><code>举例</code></strong>：</p>
+<div class="highlight"><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">t1</span><span class="w"> </span><span class="p">(</span><span class="n">col1</span><span class="w"> </span><span class="nb">INT</span><span class="p">,</span><span class="w"> </span><span class="n">col2</span><span class="w"> </span><span class="nb">CHAR</span><span class="p">(</span><span class="mi">5</span><span class="p">),</span><span class="w"> </span><span class="n">col3</span><span class="w"> </span><span class="nb">DATE</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">LINEAR</span><span class="w"> </span><span class="n">HASH</span><span class="p">(</span><span class="w"> </span><span class="k">YEAR</span><span class="p">(</span><span class="n">col3</span><span class="p">)</span><span class="w"> </span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="n">PARTITIONS</span><span class="w"> </span><span class="mi">6</span><span class="p">;</span><span class="w"></span>
+
+<span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">POWER</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">CEILING</span><span class="p">(</span><span class="w"> </span><span class="n">LOG</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">6</span><span class="p">)</span><span class="w"> </span><span class="p">))</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">8</span><span class="w"></span>
+<span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">YEAR</span><span class="p">(</span><span class="s1">&#39;1998-10-19&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="p">(</span><span class="mi">8</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="mi">1998</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mi">7</span><span class="w"></span>
+<span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="mi">6</span><span class="w"></span>
+<span class="p">(</span><span class="mi">6</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">6</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="k">TRUE</span><span class="p">:</span><span class="w"> </span><span class="n">additional</span><span class="w"> </span><span class="n">step</span><span class="w"> </span><span class="n">required</span><span class="p">)</span><span class="w"></span>
+<span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">6</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="p">((</span><span class="mi">8</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="mi">6</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mi">3</span><span class="w"></span>
+<span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w"></span>
+<span class="p">(</span><span class="mi">2</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">6</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="k">FALSE</span><span class="p">:</span><span class="w"> </span><span class="n">record</span><span class="w"> </span><span class="n">stored</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">partition</span><span class="w"> </span><span class="o">#</span><span class="mi">2</span><span class="p">)</span><span class="w"></span>
+</code></pre></div>
+<p>当线性分区的分区数是<strong>2的N次幂</strong>时，它与常规分区的结果是一致的。</p>
+<p>优缺点：</p>
+<ul>
+<li>优点：在分区管理（增加、删除、合并、拆分）时，处理更加迅速</li>
+<li>缺点：相对于常规HASH分区，线性分区数据分布不太均匀。</li>
+</ul>
+<h3 id="key">KEY 分区<a class="headerlink" href="#key" title="Permanent link">&para;</a></h3>
+<p>类似于HASH分区，但是使用MySQL服务器提供的哈希函数。NDB Cluster 使用MD5()；其它的使用基于密码加密算法的哈希函数。</p>
+<div class="highlight"><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">employees</span><span class="w"> </span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="p">...</span><span class="w"></span>
+<span class="p">)</span><span class="w"></span>
+<span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="k">KEY</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span><span class="w"></span>
+<span class="n">PARTITIONS</span><span class="w"> </span><span class="n">num</span><span class="p">;</span><span class="w"></span>
+</code></pre></div>
+<p>分区键<em>expr</em>是0或多个字段名，支持除BLOB或TEXT之外的其它类型作为分区键（查看上文<strong>分区类型</strong><em>）。用作分区键的任何列必须包含表的主键的部分或全部，如果表有一个。如果没有将列名指定为分区键，则使用表的主键（如果有）。在没有主键时，选择</em><em>唯一非空键</em>*作为分区键。</p>
+<p>注意：不能执行<code>ALTER TABLE DROP PRIMARY KEY</code>删除key类型的分区，但是NDB Cluster可以。</p>
+<h4 id="linear-key-mysql">LINEAR KEY 分区 <span style="color:red"> <strong>mysql</strong> </span><a class="headerlink" href="#linear-key-mysql" title="Permanent link">&para;</a></h4>
+<p>与线性HASH分区类似。</p>
+<h3 id="_6">子分区<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h3>
+<p>子分区（<code>Subpartitioning</code>）也称为复合分区 <code>二级分区[ob]</code>，是对分区表中分区的进一步划分。</p>
+<p>创建语法见上文。</p>
+<p>mysql 支持对<code>RANGE分区</code>和<code>LIST分区</code>划分的表再划分，子分区又支持<code>HASH分区</code>类型<code>和KEY分区</code>类型。</p>
+<p>OceanBase MySQL 模式支持 <code>HASH</code>、<code>RANGE</code>、 <code>LIST</code>、<code>KEY</code>、<code>RANGE COLUMNS</code> 和 <code>LIST COLUMNS</code> 任意两种分区方式的组合</p>
+<div class="highlight"><pre><span></span><code><span class="c1">-- 第一种写法</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">ts</span><span class="w"> </span><span class="p">(</span><span class="n">id</span><span class="w"> </span><span class="nb">INT</span><span class="p">,</span><span class="w"> </span><span class="n">purchased</span><span class="w"> </span><span class="nb">DATE</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">RANGE</span><span class="p">(</span><span class="w"> </span><span class="k">YEAR</span><span class="p">(</span><span class="n">purchased</span><span class="p">)</span><span class="w"> </span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="n">SUBPARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">HASH</span><span class="p">(</span><span class="w"> </span><span class="n">TO_DAYS</span><span class="p">(</span><span class="n">purchased</span><span class="p">)</span><span class="w"> </span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="n">SUBPARTITIONS</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="p">(</span><span class="w"></span>
+<span class="w">        </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p0</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="p">(</span><span class="mi">1990</span><span class="p">),</span><span class="w"></span>
+<span class="w">        </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p1</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="p">(</span><span class="mi">2000</span><span class="p">),</span><span class="w"></span>
+<span class="w">        </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p2</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="k">MAXVALUE</span><span class="w"></span>
+<span class="w">    </span><span class="p">);</span><span class="w"></span>
+<span class="c1">-- 第二种写法</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">ts</span><span class="w"> </span><span class="p">(</span><span class="n">id</span><span class="w"> </span><span class="nb">INT</span><span class="p">,</span><span class="w"> </span><span class="n">purchased</span><span class="w"> </span><span class="nb">DATE</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">RANGE</span><span class="p">(</span><span class="w"> </span><span class="k">YEAR</span><span class="p">(</span><span class="n">purchased</span><span class="p">)</span><span class="w"> </span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="n">SUBPARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">HASH</span><span class="p">(</span><span class="w"> </span><span class="n">TO_DAYS</span><span class="p">(</span><span class="n">purchased</span><span class="p">)</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="w"></span>
+<span class="w">        </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p0</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="p">(</span><span class="mi">1990</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="w"></span>
+<span class="w">            </span><span class="n">SUBPARTITION</span><span class="w"> </span><span class="n">s0</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="n">SUBPARTITION</span><span class="w"> </span><span class="n">s1</span><span class="w"></span>
+<span class="w">        </span><span class="p">),</span><span class="w"></span>
+<span class="w">        </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p1</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="p">(</span><span class="mi">2000</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="w"></span>
+<span class="w">            </span><span class="n">SUBPARTITION</span><span class="w"> </span><span class="n">s2</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="n">SUBPARTITION</span><span class="w"> </span><span class="n">s3</span><span class="w"></span>
+<span class="w">        </span><span class="p">),</span><span class="w"></span>
+<span class="w">        </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p2</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="k">MAXVALUE</span><span class="w"> </span><span class="p">(</span><span class="w"></span>
+<span class="w">            </span><span class="n">SUBPARTITION</span><span class="w"> </span><span class="n">s4</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="n">SUBPARTITION</span><span class="w"> </span><span class="n">s5</span><span class="w"></span>
+<span class="w">        </span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">);</span><span class="w"></span>
+</code></pre></div>
+<p><em>ts</em>表有三个分区：<em>p0, p1, p2</em>，每个分区再进一步划分为两个分区，所有共有<em>2*3 = 6</em>个分区。</p>
+<p><strong>注意事项：</strong></p>
+<ul>
+<li>每个分区必须有相同数量的子分区</li>
+<li>不允许只对一部分分区定义子分区</li>
+<li>在整个表中每个子分区的名称必须是唯一的</li>
+</ul>
+<h3 id="mysqlnull">MySQL分区如何处理NULL<a class="headerlink" href="#mysqlnull" title="Permanent link">&para;</a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+</div>
+<p><code>NULL</code>不是一个数字。
+ MySQL的分区实现将NULL视为<strong>小于任何非NULL值</strong>，就像ORDER BY一样。</p>
+<h4 id="range-partitioning">RANGE partitioning<a class="headerlink" href="#range-partitioning" title="Permanent link">&para;</a></h4>
+<p>如果计算过后分区键的值为NULL，将该记录插入到<strong>最低的分区</strong>中。</p>
+<h4 id="list-partitioning">LIST partitioning<a class="headerlink" href="#list-partitioning" title="Permanent link">&para;</a></h4>
+<p>有一个分区的值<strong>包含NULL</strong>时，由LIST分区的表才允许NULL值。</p>
+<h4 id="hash-and-key-partitioning">HASH and KEY partitioning<a class="headerlink" href="#hash-and-key-partitioning" title="Permanent link">&para;</a></h4>
+<p>NULL值被视为<strong>零</strong>。</p>
+<hr />
+<h2 id="_7">分区裁剪<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h2>
+<p>查询时带上<code>分区KEY</code> mysql仅会查询相关的分区数据</p>
+<div class="highlight"><pre><span></span><code><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">create</span><span class="w"> </span><span class="k">table</span><span class="w"> </span><span class="n">range_t</span><span class="w"></span>
+<span class="p">(</span><span class="nb">int</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="nb">int</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">)</span><span class="w"> </span><span class="n">partition</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">range</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="w"></span>
+<span class="w"> </span><span class="p">(</span><span class="n">partition</span><span class="w"> </span><span class="n">p1</span><span class="w"> </span><span class="k">values</span><span class="w"> </span><span class="k">less</span><span class="w"> </span><span class="k">than</span><span class="w"> </span><span class="p">(</span><span class="mi">100</span><span class="p">),</span><span class="w"></span>
+<span class="w"> </span><span class="n">partition</span><span class="w"> </span><span class="n">p2</span><span class="w"> </span><span class="k">values</span><span class="w"> </span><span class="k">less</span><span class="w"> </span><span class="k">than</span><span class="w"> </span><span class="k">maxvalue</span><span class="p">);</span><span class="w"></span>
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">explain</span><span class="w"> </span><span class="k">select</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="n">range_t</span><span class="w"> </span><span class="k">where</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span><span class="w"></span>
+<span class="o">+</span><span class="c1">----+-------------+---------+------------+------+---------------+------+---------+------+------+----------+-------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">select_type</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">table</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="n">partitions</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">type</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">possible_keys</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">key</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">key_len</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">ref</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">filtered</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Extra</span><span class="w">       </span><span class="o">|</span><span class="w"></span>
+<span class="o">+</span><span class="c1">----+-------------+---------+------------+------+---------------+------+---------+------+------+----------+-------------+</span>
+<span class="o">|</span><span class="w">  </span><span class="mi">1</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">SIMPLE</span><span class="w">      </span><span class="o">|</span><span class="w"> </span><span class="n">range_t</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">p1</span><span class="w">         </span><span class="o">|</span><span class="w"> </span><span class="k">ALL</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="k">NULL</span><span class="w">          </span><span class="o">|</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">NULL</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="o">|</span><span class="w">    </span><span class="mi">1</span><span class="w"> </span><span class="o">|</span><span class="w">   </span><span class="mi">100</span><span class="p">.</span><span class="mi">00</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">Using</span><span class="w"> </span><span class="k">where</span><span class="w"> </span><span class="o">|</span><span class="w"></span>
+<span class="o">+</span><span class="c1">----+-------------+---------+------------+------+---------------+------+---------+------+------+----------+-------------+</span>
+<span class="mi">1</span><span class="w"> </span><span class="k">row</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="k">set</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">warning</span><span class="w"> </span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">00</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span><span class="w"></span>
+</code></pre></div>
+<hr />
+<h2 id="_8">分区管理<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h2>
+<p>动作：添加、删除、重组（合并、分离）。使用<code>ALTER TABLE</code>语句带有的<em>partition_options</em> 子句执行，与创建分区的语法相同。这些动作会涉及到数据的迁移。</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+</div>
+<p>所有的分区都必须有相同数量的子分区，并且子分区一旦创建就不可改变。同一条语句中只有一个动作可以被执行。</p>
+<h3 id="range-and-list">RANGE and LIST 的管理<a class="headerlink" href="#range-and-list" title="Permanent link">&para;</a></h3>
+<h4 id="_9">删除<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="k">DROP</span><span class="w"> </span><span class="n">PARTITION</span><span class="w"> </span><span class="p">...</span><span class="w"></span>
+</code></pre></div>
+<p>分区中的数据同时也被删除。<code>NDBCLUSTER</code>存储引擎不支持该操作。</p>
+<h4 id="_10">添加<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="k">ADD</span><span class="w"> </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">partition_definitions</span><span class="w"></span>
+</code></pre></div>
+<p>RANGE只能在分区尾部添加新的分区，并且其范围比存在的分区都大。</p>
+<div class="highlight"><pre><span></span><code><span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">members</span><span class="w"> </span><span class="k">ADD</span><span class="w"> </span><span class="n">PARTITION</span><span class="w"> </span><span class="p">(</span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p3</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="p">(</span><span class="mi">2010</span><span class="p">));</span><span class="w"></span>
+<span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">tt</span><span class="w"> </span><span class="k">ADD</span><span class="w"> </span><span class="n">PARTITION</span><span class="w"> </span><span class="p">(</span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p2</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span><span class="mi">7</span><span class="p">,</span><span class="w"> </span><span class="mi">14</span><span class="p">,</span><span class="w"> </span><span class="mi">21</span><span class="p">),</span><span class="w"> </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p3</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="p">));</span><span class="w"></span>
+</code></pre></div>
+<p>LIST分区不能包含重复的值</p>
+<h4 id="_11">重组<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">table_name</span><span class="w"> </span><span class="n">REORGANIZE</span><span class="w"> </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">partition_names</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="p">(</span><span class="n">partition_definitions</span><span class="p">)</span><span class="w"></span>
+</code></pre></div>
+<p>数据会存储在新的分区上。</p>
+<p>分离分区：</p>
+<div class="highlight"><pre><span></span><code><span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">members</span><span class="w"></span>
+<span class="w">    </span><span class="n">REORGANIZE</span><span class="w"> </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p0</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="p">(</span><span class="w"></span>
+<span class="w">        </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">n0</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="p">(</span><span class="mi">1970</span><span class="p">),</span><span class="w"></span>
+<span class="w">        </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">n1</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="p">(</span><span class="mi">1980</span><span class="p">)</span><span class="w"></span>
+<span class="p">);</span><span class="w"></span>
+</code></pre></div>
+<p>合并分区：</p>
+<div class="highlight"><pre><span></span><code><span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">members</span><span class="w"> </span><span class="n">REORGANIZE</span><span class="w"> </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">s0</span><span class="p">,</span><span class="n">s1</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="p">(</span><span class="w"></span>
+<span class="w"> </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p0</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="p">(</span><span class="mi">1970</span><span class="p">)</span><span class="w"></span>
+<span class="p">);</span><span class="w"></span>
+</code></pre></div>
+<p>分离与合并的关系不必是一对多或多对一，可以是<strong>多对多</strong>：</p>
+<div class="highlight"><pre><span></span><code><span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">members</span><span class="w"> </span><span class="n">REORGANIZE</span><span class="w"> </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p0</span><span class="p">,</span><span class="n">p1</span><span class="p">,</span><span class="n">p2</span><span class="p">,</span><span class="n">p3</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">m0</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="p">(</span><span class="mi">1980</span><span class="p">),</span><span class="w"></span>
+<span class="w">    </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">m1</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="p">(</span><span class="mi">2000</span><span class="p">)</span><span class="w"></span>
+<span class="p">);</span><span class="w"></span>
+</code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+</div>
+<p>RANGE分区<code>不能跨范围重组</code>。例如：不能重组‘p0,p2’，而跳过p1。
+ 不能使用重组语句改变分区类型，以及改变分区键<em>expr</em>；使用<code>ALTER TABLE ... PARTITION BY ...</code>达到这个目的。</p>
+<h3 id="hash-and-key">HASH and KEY 的管理<a class="headerlink" href="#hash-and-key" title="Permanent link">&para;</a></h3>
+<p>这两个分区没有分区名，不能使用和分区名相关的语句进行管理。</p>
+<h4 id="_12">删除<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h4>
+<p>不可删除指定分区，使用如下语句合并分区：</p>
+<div class="highlight"><pre><span></span><code><span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">table_name</span><span class="w"> </span><span class="k">COALESCE</span><span class="w"> </span><span class="n">PARTITION</span><span class="w"> </span><span class="nb">number</span><span class="w"></span>
+</code></pre></div>
+<p><em>number</em>是要合并到其余分区的分区数，即删除的分区数。</p>
+<div class="highlight"><pre><span></span><code><span class="n">MariaDB</span><span class="w"> </span><span class="p">[</span><span class="n">MYISAM_TEST</span><span class="p">]</span><span class="o">&gt;</span><span class="w"> </span><span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">hash_par</span><span class="w"> </span><span class="k">COALESCE</span><span class="w"> </span><span class="n">PARTITION</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w"></span>
+<span class="n">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">11</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span><span class="w"></span>
+<span class="n">Records</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="w">  </span><span class="n">Duplicates</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">  </span><span class="n">Warnings</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+</code></pre></div>
+<h4 id="_13">添加<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">table_name</span><span class="w"> </span><span class="k">ADD</span><span class="w"> </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">PARTITIONS</span><span class="w"> </span><span class="nb">number</span><span class="w"> </span>
+</code></pre></div>
+<p><em>number</em>是添加的分区数。</p>
+<h4 id="_14">重组<a class="headerlink" href="#_14" title="Permanent link">&para;</a></h4>
+<p>通过删除和添加实现。</p>
+<p>子分区会自动的进行相应的操作：</p>
+<div class="highlight"><pre><span></span><code><span class="n">MariaDB</span><span class="w"> </span><span class="p">[</span><span class="n">MYISAM_TEST</span><span class="p">]</span><span class="o">&gt;</span><span class="w"> </span><span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">sub_par_test</span><span class="w"> </span><span class="n">REORGANIZE</span><span class="w"> </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">P0</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="p">(</span><span class="n">PARTITION</span><span class="w"> </span><span class="n">P00</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="p">(</span><span class="mi">5</span><span class="p">),</span><span class="w"> </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">P01</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="k">LESS</span><span class="w"> </span><span class="k">THAN</span><span class="w"> </span><span class="p">(</span><span class="mi">10</span><span class="p">));</span><span class="w"></span>
+<span class="n">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">01</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span><span class="w"></span>
+<span class="n">Records</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="w">  </span><span class="n">Duplicates</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">  </span><span class="n">Warnings</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+</code></pre></div>
+<h3 id="_15">分区的维护<a class="headerlink" href="#_15" title="Permanent link">&para;</a></h3>
+<p>维护动作：<a href="https://dev.mysql.com/doc/refman/5.5/en/check-table.html"><code>CHECK TABLE</code></a>, <a href="https://dev.mysql.com/doc/refman/5.5/en/optimize-table.html"><code>OPTIMIZE TABLE</code></a>, <a href="https://dev.mysql.com/doc/refman/5.5/en/analyze-table.html"><code>ANALYZE TABLE</code></a>, and <a href="https://dev.mysql.com/doc/refman/5.5/en/repair-table.html"><code>REPAIR TABLE</code></a>。</p>
+<p>语法：</p>
+<div class="highlight"><pre><span></span><code><span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">table_name</span><span class="w"> </span><span class="n">action</span><span class="w"> </span><span class="n">PARTITION</span><span class="w"> </span><span class="err">{</span><span class="n">partition_names</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">ALL</span><span class="err">}</span><span class="w"></span>
+</code></pre></div>
+<ul>
+<li><strong>重构分区</strong>：丢弃（drop）分区所有的记录，然后重新插入数据。对于碎片整理很有用处。</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">t1</span><span class="w"> </span><span class="n">REBUILD</span><span class="w"> </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p0</span><span class="p">,</span><span class="w"> </span><span class="n">p1</span><span class="p">;</span><span class="w"></span>
+</code></pre></div>
+<ul>
+<li><strong>优化分区</strong>：若删除了一个分区的大量数据，或者在可变类型的字段做出了很多改变，可使用此语句来回收未使用的空间和优化分区数据文件。</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">t1</span><span class="w"> </span><span class="n">OPTIMIZE</span><span class="w"> </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p0</span><span class="p">,</span><span class="w"> </span><span class="n">p1</span><span class="p">;</span><span class="w"></span>
+</code></pre></div>
+<p>运行<code>OPTIMIZE PARTITION</code>与运行<code>CHECK PARTITION</code>, <code>ANALYZE PARTITION</code>, and <code>REPAIR PARTITION</code> 等价。</p>
+<p>一些存储引擎（如InnoDB），不支持对单独的分区优化。在这种情况下，此语句将重构整个表。从MySQL 5.5.30开始，使用此语句将导致一个bug，使用<code>ALTER TABLE ... REBUILD PARTITION</code> and <code>ALTER TABLE ... ANALYZE PARTITION</code> 来避免整个问题。</p>
+<ul>
+<li><strong>分析分区</strong>：读取并存储分区的key分布。</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">t1</span><span class="w"> </span><span class="k">ANALYZE</span><span class="w"> </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p3</span><span class="p">;</span><span class="w"></span>
+</code></pre></div>
+<ul>
+<li><strong>修复分区</strong>：修复损坏的分区。</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">t1</span><span class="w"> </span><span class="n">REPAIR</span><span class="w"> </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p0</span><span class="p">,</span><span class="n">p1</span><span class="p">;</span><span class="w"></span>
+</code></pre></div>
+<ul>
+<li><strong>检查分区</strong>：检查分区是否存在错误。</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">trb3</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="n">PARTITION</span><span class="w"> </span><span class="n">p1</span><span class="p">;</span><span class="w"></span>
+</code></pre></div>
+<p>此语句将告诉表中的数据或索引是否已损坏。可以使用<code>REPAIR PARTITION</code>修复。</p>
+<ul>
+<li><strong>重建分区</strong>：删除指定分区以及所有指定分区的数据并创建新分区。</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">hash_par</span><span class="w"> </span><span class="k">TRUNCATE</span><span class="w"> </span><span class="n">PARTITION</span><span class="w"> </span><span class="k">ALL</span><span class="p">;</span><span class="w"></span>
+</code></pre></div>
+<p><a href="https://dev.mysql.com/doc/refman/5.5/en/mysqlcheck.html"><strong>mysqlcheck</strong></a> and <a href="https://dev.mysql.com/doc/refman/5.5/en/myisamchk.html"><strong>myisamchk</strong></a>不支持分区表。</p>
+<p><code>ANALYZE</code>, <code>CHECK</code>, <code>OPTIMIZE</code>, <code>REBUILD</code>, <code>REPAIR</code>, and <code>TRUNCATE</code>操作不支持子分区。</p>
+<hr />
+<h2 id="_16">分区限制<a class="headerlink" href="#_16" title="Permanent link">&para;</a></h2>
+<ul>
+<li>
+<p>划分表达式不允许的结构：</p>
+</li>
+<li>
+<p>存储过程，存储函数，UDFS，插件</p>
+</li>
+<li>
+<p>声明或使用变量</p>
+</li>
+<li>
+<p>部分算术和逻辑运算符不允许在划分表达式中出现：</p>
+</li>
+<li>
+<p>除法运算符：<code>/</code></p>
+</li>
+<li>
+<p>位运算符： |, &amp;, ^, &lt;&lt;, &gt;&gt;, ~</p>
+</li>
+<li>
+<p>MySQL 5.5 不支持在分区表中使用<code>HANDLER</code>语句</p>
+</li>
+<li>
+<p>创建分区表之后不要改变模式<code>MySQL mode</code></p>
+</li>
+<li>
+<p>最大分区数。一张表最多有1024（包括子分区）个分区，NDB存储引擎不受此限制。</p>
+</li>
+<li>
+<p>不支持查询缓存。</p>
+</li>
+<li>
+<p>每个分区的<strong>key caches</strong>。在MySQL 5.5中，CACHE INDEX和LOAD INDEX INTO CACHE语句支持MyISAM分区表的key caches。</p>
+</li>
+<li>
+<p>InnoDB分区表不支持外键</p>
+</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="c1">-- InnoDB: Foreign keys are not yet supported in conjunction with partitioning</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">Persons</span><span class="p">(</span><span class="n">PersonID</span><span class="w"> </span><span class="nb">INT</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">)</span><span class="w"></span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">Orders</span><span class="w"> </span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="n">OrderID</span><span class="w"> </span><span class="nb">int</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">OrderNumber</span><span class="w"> </span><span class="nb">int</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">PersonID</span><span class="w"> </span><span class="nb">int</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">OrderID</span><span class="p">),</span><span class="w"></span>
+<span class="w">    </span><span class="k">FOREIGN</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">PersonID</span><span class="p">)</span><span class="w"> </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">Persons</span><span class="p">(</span><span class="n">PersonID</span><span class="p">)</span><span class="w"></span>
+<span class="p">)</span><span class="w"> </span><span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">HASH</span><span class="p">(</span><span class="n">OrderID</span><span class="p">)</span><span class="w"> </span><span class="n">PARTITIONS</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span><span class="w"></span>
+</code></pre></div>
+<ul>
+<li>
+<p>ALTER TABLE ... ORDER BY。导致仅在每个分区内对记录排序。</p>
+</li>
+<li>
+<p>通过修改主键对REPLACE语句的影响。see <a href="https://dev.mysql.com/doc/refman/5.5/en/partitioning-limitations-partitioning-keys-unique-keys.html">Section 19.5.1, “Partitioning Keys, Primary Keys, and Unique Keys”</a> and  <a href="https://dev.mysql.com/doc/refman/5.5/en/replace.html"><code>REPLACE</code></a></p>
+</li>
+<li>
+<p>完整TEXT索引。不支持<code>FULLTEXT</code>索引或搜索。</p>
+</li>
+<li>
+<p>空间类型的列。具有空间数据类型（如POINT或GEOMETRY）的列不能在分区表中使用。</p>
+</li>
+<li>
+<p>临时表、log表不能分区。</p>
+</li>
+<li>
+<p>分区键的类型。分区键必须是整数列或解析为整数的表达式。可以接受NULL值。不能是子查询。</p>
+</li>
+<li>
+<p>子分区。只有<code>RANGE</code>和<code>LIST</code>表支持子分区，并且子分区的类型必须是<code>HASH</code>或<code>KEY</code>分区 <code>mysql限制</code></p>
+</li>
+<li>
+<p>SUBPARTITION BY KEY 要求必须指明分区的字段或字段列表。</p>
+</li>
+<li>
+<p>不支持<strong>DELAYED</strong>选项。不支持<a href="https://dev.mysql.com/doc/refman/5.5/en/insert-delayed.html"><code>INSERT DELAYED</code></a>。</p>
+</li>
+<li>
+<p>性能方面 (1)<code>文件系统操作</code> (2)<code>表锁:分区操作会在表上获取写锁。读取表的操作几乎不会受到影响；一旦分区操作完成，就执行挂起的INSERT和UPDATE操作</code> (3)<code>LOAD DATA</code> (4)<code>存储引擎</code></p>
+</li>
+<li>
+<p>blah blah</p>
+</li>
+</ul>
+<h3 id="_17">分区键，主键，唯一键<a class="headerlink" href="#_17" title="Permanent link">&para;</a></h3>
+<p>三者的关系：分区表的分区表达式中使用的所有列必须是表可能具有的每个唯一键的一部分（主键被定义为唯一键）。换句话说：**表上的每个唯一键<code>mysql</code>必须使用表的分区表达式中的每一列。</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+</div>
+<p>OB中表是索引组织表（IOT），对于分区表而言，为了保证指定主键的查询能很快定位到表所在的分区，分区键必须是<code>主键</code>的子集.</p>
+<p>例如下面这些是合法的：</p>
+<div class="highlight"><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">t1</span><span class="w"> </span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="n">col1</span><span class="w"> </span><span class="nb">INT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">col2</span><span class="w"> </span><span class="nb">DATE</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">col3</span><span class="w"> </span><span class="nb">INT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">col4</span><span class="w"> </span><span class="nb">INT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="k">UNIQUE</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">col1</span><span class="p">,</span><span class="w"> </span><span class="n">col2</span><span class="p">,</span><span class="w"> </span><span class="n">col3</span><span class="p">)</span><span class="w"></span>
+<span class="p">)</span><span class="w"></span>
+<span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">HASH</span><span class="p">(</span><span class="n">col3</span><span class="p">)</span><span class="w"></span>
+<span class="n">PARTITIONS</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span><span class="w"></span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">t2</span><span class="w"> </span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="n">col1</span><span class="w"> </span><span class="nb">INT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">col2</span><span class="w"> </span><span class="nb">DATE</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">col3</span><span class="w"> </span><span class="nb">INT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">col4</span><span class="w"> </span><span class="nb">INT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="k">UNIQUE</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">col1</span><span class="p">,</span><span class="w"> </span><span class="n">col3</span><span class="p">)</span><span class="w"></span>
+<span class="p">)</span><span class="w"></span>
+<span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">HASH</span><span class="p">(</span><span class="n">col1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">col3</span><span class="p">)</span><span class="w"></span>
+<span class="n">PARTITIONS</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span><span class="w"></span>
+</code></pre></div>
+<h3 id="_18">与存储引擎相关的分区限制<a class="headerlink" href="#_18" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p><strong>MERGE</strong> ：表不能分区。分区表也不能合并。</p>
+</li>
+<li>
+<p><strong>FEDERATED</strong> ：表不能分区。</p>
+</li>
+<li>
+<p><strong>CSV</strong> ：表不能分区。</p>
+</li>
+<li>
+<p><strong>InnoDB</strong> ：表中不能含有外键，也不能有被引用为外键的字段。对于子分区也不支持多块磁盘存储。实操发现MyISAM也不支持了。优化相关参考<a href="23. MySQL分区.md">前文</a>分区维护章节。</p>
+</li>
+<li>
+<p><strong>用户定义的分区和NDB存储引擎（NDB集群）</strong>：NDB只支持<code>[LINEAR] KEY</code>分区类型。</p>
+<p>一张表的最大的分区数取决于在一个集群中数据节点与节点组的数量、NDB集群的版本、其它实际情况， See <a href="https://dev.mysql.com/doc/refman/5.5/en/mysql-cluster-nodes-groups.html#mysql-cluster-nodes-groups-user-partitioning">NDB and user-defined partitioning</a>。</p>
+<p>NDB表中每个分区可以存储的最大固定大小数据量为16 GB。</p>
+<p>分区表必须具有显式主键。</p>
+</li>
+<li>
+<p>升级分区表：执行升级时，必须转储并重新加载由<code>KEY</code>分区并使用除NDB之外的任何存储引擎的表。</p>
+</li>
+<li>
+<p>所有的分区必须使用同一个存储引擎：分区表的所有分区必须使用相同的存储引擎，并且它必须与整个表使用的存储引擎相同。另外，如果在创建或修改表的时候在表的级别没有指定存储引擎，要么不指定任何一个[子]分区的引擎，要么全部指定。</p>
+</li>
+</ul>
+<h3 id="_19">与函数相关的分区限制<a class="headerlink" href="#_19" title="Permanent link">&para;</a></h3>
+<p>参考<a href="https://dev.mysql.com/doc/refman/5.5/en/partitioning-limitations-functions.html">分区键允许使用的Functions</a></p>
+<h3 id="_20">分区和表级锁定<a class="headerlink" href="#_20" title="Permanent link">&para;</a></h3>
+<p>对于在执行DML或DDL语句时实际执行表级锁的MyISAM等存储引擎，影响分区表的这种语句会对表作为一个整体进行锁定。也就是说，所有分区都会被锁定，直到语句结束。例如，来自MyISAM的分区表的SELECT会导致整个表的锁定。</p>
+<p>这会导致随着分区数量的增加下面讨论的语句的执行速度回越来越慢。但是在MySQL 5.6.6 版本引入了分区锁定修剪（<code>partition lock pruning</code>）大大减少了这种影响。</p>
+<p>对于使用行级锁定并且在分区修剪之前不会实际执行（或需要执行）锁定的存储引擎（如InnoDB），情况不会如此。</p>
+<p>下面讨论在采用表级锁定的存储引擎的分区表上使用MySQL语句的影响。</p>
+<h4 id="dml">DML 语句<a class="headerlink" href="#dml" title="Permanent link">&para;</a></h4>
+<p>SELECT 锁定整个表。包括<code>UNION</code>和<code>JOIN</code>语句包含的表。
+UPDATE 锁定整个表。
+REPLACE 锁定整个表。
+INSERT（包括 <a href="https://dev.mysql.com/doc/refman/5.5/en/insert-on-duplicate.html"><code>INSERT ... ON DUPLICATE KEY UPDATE</code></a>） 锁定整个表。
+INSERT ... SELECT 锁定源与目标表。</p>
+<p><a href="https://dev.mysql.com/doc/refman/5.5/en/load-data.html"><code>LOAD DATA</code></a> 锁定整个表。</p>
+<p>触发器激活时锁定整个表。</p>
+<h4 id="ddl">DDL 语句<a class="headerlink" href="#ddl" title="Permanent link">&para;</a></h4>
+<p>CREATE VIEW 锁定它读到的所有分区表。
+ALTER TABLE 锁定影响到的分区表。</p>
+<h4 id="_21">其它语句<a class="headerlink" href="#_21" title="Permanent link">&para;</a></h4>
+<p><a href="https://dev.mysql.com/doc/refman/5.5/en/lock-tables.html"><code>LOCK TABLES</code></a> 锁定分区表的所有分区。</p>
+<p><a href="https://dev.mysql.com/doc/refman/5.5/en/call.html">CALL stored_procedure(<em>expr</em>)</a>调用时锁定在<em>expr</em>中涉及到的所有分区表的所有分区。</p>
+<p>ALTER TABLE 还将在表级获取元数据锁。</p>
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="../02%20%E7%B4%A2%E5%BC%95/" class="md-footer__link md-footer__link--prev" aria-label="Previous: 02 索引" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              02 索引
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../04%20QA/" class="md-footer__link md-footer__link--next" aria-label="Next: 04 QA" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              04 QA
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../../..", "features": [], "search": "../../../assets/javascripts/workers/search.2a1c317c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a6c66575.min.js"></script>
+      
+    
+  </body>
+</html>
